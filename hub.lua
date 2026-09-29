@@ -395,7 +395,58 @@ local function launch()
             mkSlider("Jump Power", 16, 500, 100, function(v) PlayerSet.JumpPower = v end)
             mkSlider("FOV", 70, 120, 70, function(v) WS.CurrentCamera.FieldOfView = v end)
         elseif name == "アンチ" then
-            -- パート2
+            mkToggle("Anti Grab", function(s)
+    antiGrabActive = s
+    if antiGrabConn then antiGrabConn:Disconnect() antiGrabConn = nil end
+    for _, c in ipairs(antiGrabTripConns) do c:Disconnect() end
+    antiGrabTripConns = {}
+    if s then
+        if LP.Character then antiGrabSetup(LP.Character) end
+        table.insert(antiGrabTripConns, LP.CharacterAdded:Connect(antiGrabSetup))
+    end
+end)
+mkToggle("Anti Ragdoll", function(s)
+    antiRagdollEnabled = s
+    if s then
+        local humanoid = LP.Character and LP.Character:FindFirstChild("Humanoid")
+        if humanoid then protectRagdollHumanoid(humanoid) end
+    else
+        for _, conn in ipairs(antiRagdollConns) do conn:Disconnect() end
+        antiRagdollConns = {}
+    end
+end)
+mkToggle("Anti Blobman Kill", function(s)
+    antiBlobmanActive = s
+    if antiBlobmanTask then task.cancel(antiBlobmanTask) antiBlobmanTask = nil end
+    if s then
+        antiBlobmanTask = task.spawn(function()
+            while antiBlobmanActive do
+                local char = LP.Character
+                if char then
+                    local hum = char:FindFirstChild("Humanoid")
+                    if hum and hum.Health > 0 then
+                        hum.Sit = true
+                        pcall(function() hum:ChangeState(Enum.HumanoidStateType.Running) end)
+                    end
+                end
+                task.wait()
+            end
+        end)
+    end
+end)
+mkToggle("Anti Explosion", function(s)
+    antiExplosionEnabled = s
+    if s then
+        if LP.Character then setupAntiExplosion(LP.Character) end
+        LP.CharacterAdded:Connect(setupAntiExplosion)
+    end
+end)
+mkToggle("Anti Fire", function(s) antiFireEnabled = s end)
+mkToggle("Anti Lag", function(s)
+    local scripts = LP:FindFirstChild("PlayerScripts")
+    local target = scripts and scripts:FindFirstChild("CharacterAndBeamMove")
+    if target then target.Disabled = s end
+end)
         elseif name == "キック" then
             -- パート4
         elseif name == "キル" then
