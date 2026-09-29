@@ -471,7 +471,7 @@ local function mkDropdown(txt, options, default, cb)
 
     local list = Instance.new("Frame")
     list.Size = UDim2.new(0,150,0,0)
-    list.Position = UDim2.new(1,-122,1,4)
+    list.Position = UDim2.new(1,-122,1,2)
     list.BackgroundColor3 = PANEL
     list.BorderSizePixel = 0
     list.Visible = false
