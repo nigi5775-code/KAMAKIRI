@@ -111,6 +111,60 @@ Kbtn.TextSize = 15
 Kbtn.Font = Enum.Font.GothamBold
 Kbtn.Parent = KF
 local c3 = Instance.new("UICorner") c3.CornerRadius = UDim.new(0,8) c3.Parent = Kbtn
+-- アンチ変数
+local antiGrabActive, antiGrabConn, antiGrabTripConns = false, nil, {}
+local antiRagdollEnabled, antiRagdollConns = false, {}
+local antiBlobmanActive, antiBlobmanTask = false, nil
+local antiExplosionEnabled, antiExplosionConn = false, nil
+local antiFireEnabled = false
+
+local function antiGrabRecover(hum, root)
+    if not (hum and root) then return end
+    pcall(function()
+        root.AssemblyLinearVelocity = Vector3.new(0,0,0)
+        root.AssemblyAngularVelocity = Vector3.new(0,0,0)
+        hum.PlatformStand = false
+        hum:ChangeState(Enum.HumanoidStateType.Running)
+    end)
+end
+
+local function antiGrabSetup(char)
+    for _, c in pairs(antiGrabTripConns) do c:Disconnect() end
+    antiGrabTripConns = {}
+    local hum = char:WaitForChild("Humanoid", 5)
+    local root = char:WaitForChild("HumanoidRootPart", 5)
+    if not (hum and root) then return end
+    for _, st in ipairs({Enum.HumanoidStateType.FallingDown, Enum.HumanoidStateType.Ragdoll, Enum.HumanoidStateType.PlatformStanding}) do
+        pcall(function() hum:SetStateEnabled(st, false) end)
+    end
+end
+
+local function protectRagdollHumanoid(humanoid)
+    humanoid.BreakJointsOnDeath = false
+    humanoid.AutoRotate = true
+    humanoid.PlatformStand = false
+    table.insert(antiRagdollConns, humanoid.HealthChanged:Connect(function(health)
+        if antiRagdollEnabled and health <= 0 then humanoid.Health = 1 end
+    end))
+    table.insert(antiRagdollConns, humanoid:GetPropertyChangedSignal("PlatformStand"):Connect(function()
+        if antiRagdollEnabled and humanoid.PlatformStand == true then humanoid.PlatformStand = false end
+    end))
+end
+
+local function setupAntiExplosion(character)
+    if not antiExplosionEnabled then return end
+    local hum = character:WaitForChild("Humanoid", 5)
+    local partOwner = hum and hum:FindFirstChild("Ragdolled")
+    if partOwner then
+        if antiExplosionConn then antiExplosionConn:Disconnect() end
+        antiExplosionConn = partOwner:GetPropertyChangedSignal("Value"):Connect(function()
+            if not antiExplosionEnabled then return end
+            for _, part in ipairs(character:GetChildren()) do
+                if part:IsA("BasePart") then part.Anchored = partOwner.Value end
+            end
+        end)
+    end
+end
 
 local done = false
 
