@@ -128,16 +128,7 @@ local function antiGrabRecover(hum, root)
     end)
 end
 
-local function antiGrabSetup(char)
-    for _, c in pairs(antiGrabTripConns) do c:Disconnect() end
-    antiGrabTripConns = {}
-    local hum = char:WaitForChild("Humanoid", 5)
-    local root = char:WaitForChild("HumanoidRootPart", 5)
-    if not (hum and root) then return end
-    for _, st in ipairs({Enum.HumanoidStateType.FallingDown, Enum.HumanoidStateType.Ragdoll, Enum.HumanoidStateType.PlatformStanding}) do
-        pcall(function() hum:SetStateEnabled(st, false) end)
-    end
-end
+
 
 local function protectRagdollHumanoid(humanoid)
     humanoid.BreakJointsOnDeath = false
@@ -151,6 +142,21 @@ local function protectRagdollHumanoid(humanoid)
     end))
 end
 
+local function antiGrabSetup(char)
+    for _, c in pairs(antiGrabTripConns) do c:Disconnect() end
+    antiGrabTripConns = {}
+    local hum = char:WaitForChild("Humanoid", 5)
+    local root = char:WaitForChild("HumanoidRootPart", 5)
+    if not (hum and root) then return end
+    for _, st in ipairs({Enum.HumanoidStateType.FallingDown, Enum.HumanoidStateType.Ragdoll, Enum.HumanoidStateType.PlatformStanding}) do
+        pcall(function() hum:SetStateEnabled(st, false) end)
+    end
+    table.insert(antiGrabTripConns, hum.StateChanged:Connect(function(_, new)
+        if not antiGrabActive and (new == Enum.HumanoidStateType.FallingDown or new == Enum.HumanoidStateType.Ragdoll or new == Enum.HumanoidStateType.PlatformStanding) then
+            antiGrabRecover(hum, root)
+        end
+    end))
+end
 local function setupAntiExplosion(character)
     if not antiExplosionEnabled then return end
     local hum = character:WaitForChild("Humanoid", 5)
