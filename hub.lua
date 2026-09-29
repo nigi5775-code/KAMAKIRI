@@ -427,6 +427,11 @@ local function launch()
         local bs = Instance.new("UIStroke") bs.Color = AC bs.Thickness = 1 bs.Parent = b
         b.MouseButton1Click:Connect(function() if cb then cb() end end)
     end
+    
+    local function NotifyOrion(text)
+    Notify("KAMAKIRI HUB", text, 3)
+    end
+    
 -- ドロップダウン用状態管理
 local DropdownState = {Selected = nil}
 local DropdownRefresh = nil
