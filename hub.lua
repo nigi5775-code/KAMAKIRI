@@ -1,1 +1,531 @@
--- KAMAKIRI HUB
+--[[ KAMAKIRI HUB | FTAP | Key: prayingmantis | Credit: R_8y ]]
+
+local Players = game:GetService("Players")
+local SG = game:GetService("StarterGui")
+local RS = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local TW = game:GetService("TweenService")
+local CG = game:GetService("CoreGui")
+local WS = game:GetService("Workspace")
+local TCS = game:GetService("TextChatService")
+local RepS = game:GetService("ReplicatedStorage")
+local Debris = game:GetService("Debris")
+local LP = Players.LocalPlayer
+
+-- カラー
+local BG = Color3.fromRGB(15,15,20)
+local AC = Color3.fromRGB(0,255,100)
+local PANEL = Color3.fromRGB(25,25,32)
+local TEXT_C = Color3.fromRGB(255,255,255)
+local SUB_C = Color3.fromRGB(170,170,180)
+
+local function Notify(t,x,d) SG:SetCore("SendNotification",{Title=t,Text=x,Duration=d}) end
+
+local function getGui()
+    local g = Instance.new("ScreenGui")
+    g.ResetOnSpawn = false
+    g.IgnoreGuiInset = true
+    g.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    local ok = pcall(function() g.Parent = CG end)
+    if not ok then g.Parent = LP:WaitForChild("PlayerGui") end
+    return g
+end
+
+-- チャット送信
+local function sendChat(m)
+    if TCS.ChatVersion == Enum.ChatVersion.TextChatService then
+        local ch = TCS:FindFirstChild("TextChannels")
+        if ch then
+            local gen = ch:FindFirstChild("RBXGeneral")
+            if gen then pcall(function() gen:SendAsync(m) end) return end
+        end
+    end
+    local ev = RepS:FindFirstChild("DefaultChatSystemChatEvents")
+    if ev and ev:FindFirstChild("SayMessageRequest") then
+        ev.SayMessageRequest:FireServer(m, "All")
+    end
+end
+
+sendChat("KAMAKIRI HUB")
+task.wait(1.2)
+sendChat("Fling Things and People")
+task.wait(1.2)
+sendChat("スクリプト")
+task.wait(1.2)
+
+-- 既存削除
+for _, n in ipairs({"KAMAKIRI_KEY","KAMAKIRI_HUB","KAMAKIRI_Splash","KAMAKIRI_CREDIT"}) do
+    local a = CG:FindFirstChild(n) if a then a:Destroy() end
+    local b = LP:WaitForChild("PlayerGui"):FindFirstChild(n) if b then b:Destroy() end
+end
+
+-- ==================== キー画面 ====================
+local KG = getGui() KG.Name = "KAMAKIRI_KEY"
+local KF = Instance.new("Frame")
+KF.Size = UDim2.new(0,300,0,230)
+KF.Position = UDim2.new(0.5,-150,0.5,-115)
+KF.BackgroundColor3 = BG
+KF.BorderSizePixel = 0
+KF.Active = true
+KF.Draggable = true
+KF.Parent = KG
+local c1 = Instance.new("UICorner") c1.CornerRadius = UDim.new(0,12) c1.Parent = KF
+local s1 = Instance.new("UIStroke") s1.Color = AC s1.Thickness = 1.5 s1.Parent = KF
+
+local KT = Instance.new("TextLabel")
+KT.Size = UDim2.new(1,0,0,40)
+KT.Position = UDim2.new(0,0,0,10)
+KT.BackgroundTransparency = 1
+KT.Text = "KAMAKIRI HUB"
+KT.TextColor3 = AC
+KT.TextSize = 22
+KT.Font = Enum.Font.GothamBlack
+KT.Parent = KF
+
+local KS = Instance.new("TextLabel")
+KS.Size = UDim2.new(1,0,0,20)
+KS.Position = UDim2.new(0,0,0,50)
+KS.BackgroundTransparency = 1
+KS.Text = "キーを入力してください"
+KS.TextColor3 = SUB_C
+KS.TextSize = 13
+KS.Font = Enum.Font.Gotham
+KS.Parent = KF
+
+local KB = Instance.new("TextBox")
+KB.Size = UDim2.new(1,-40,0,40)
+KB.Position = UDim2.new(0,20,0,80)
+KB.BackgroundColor3 = PANEL
+KB.BorderSizePixel = 0
+KB.PlaceholderText = "Key..."
+KB.Text = ""
+KB.TextColor3 = TEXT_C
+KB.PlaceholderColor3 = SUB_C
+KB.TextSize = 14
+KB.Font = Enum.Font.Gotham
+KB.ClearTextOnFocus = false
+KB.Parent = KF
+local c2 = Instance.new("UICorner") c2.CornerRadius = UDim.new(0,8) c2.Parent = KB
+local s2 = Instance.new("UIStroke") s2.Color = AC s2.Thickness = 1 s2.Parent = KB
+
+local Kbtn = Instance.new("TextButton")
+Kbtn.Size = UDim2.new(1,-40,0,40)
+Kbtn.Position = UDim2.new(0,20,0,130)
+Kbtn.BackgroundColor3 = AC
+Kbtn.BorderSizePixel = 0
+Kbtn.Text = "認証"
+Kbtn.TextColor3 = Color3.fromRGB(0,0,0)
+Kbtn.TextSize = 15
+Kbtn.Font = Enum.Font.GothamBold
+Kbtn.Parent = KF
+local c3 = Instance.new("UICorner") c3.CornerRadius = UDim.new(0,8) c3.Parent = Kbtn
+
+local CreditBtn = Instance.new("TextButton")
+CreditBtn.Size = UDim2.new(1,-40,0,30)
+CreditBtn.Position = UDim2.new(0,20,0,180)
+CreditBtn.BackgroundColor3 = PANEL
+CreditBtn.BorderSizePixel = 0
+CreditBtn.Text = "製作者を見る"
+CreditBtn.TextColor3 = AC
+CreditBtn.TextSize = 12
+CreditBtn.Font = Enum.Font.GothamBold
+CreditBtn.Parent = KF
+local c4 = Instance.new("UICorner") c4.CornerRadius = UDim.new(0,8) c4.Parent = CreditBtn
+local s4 = Instance.new("UIStroke") s4.Color = AC s4.Thickness = 1 s4.Parent = CreditBtn
+
+CreditBtn.MouseButton1Click:Connect(function()
+    local CGui = getGui() CGui.Name = "KAMAKIRI_CREDIT"
+    local Frame = Instance.new("Frame")
+    Frame.Size = UDim2.new(0,250,0,120)
+    Frame.Position = UDim2.new(0.5,-125,0.5,-60)
+    Frame.BackgroundColor3 = BG
+    Frame.BorderSizePixel = 0
+    Frame.Parent = CGui
+    local fc1 = Instance.new("UICorner") fc1.CornerRadius = UDim.new(0,12) fc1.Parent = Frame
+    local fs1 = Instance.new("UIStroke") fs1.Color = AC fs1.Thickness = 1.5 fs1.Parent = Frame
+    
+    local t = Instance.new("TextLabel")
+    t.Size = UDim2.new(1,0,0,30)
+    t.Position = UDim2.new(0,0,0,10)
+    t.BackgroundTransparency = 1
+    t.Text = "製作者"
+    t.TextColor3 = AC
+    t.Font = Enum.Font.GothamBold
+    t.TextSize = 16
+    t.Parent = Frame
+    
+    local nm = Instance.new("TextLabel")
+    nm.Size = UDim2.new(1,0,0,40)
+    nm.Position = UDim2.new(0,0,0,40)
+    nm.BackgroundTransparency = 1
+    nm.Text = "R_8y"
+    nm.TextColor3 = TEXT_C
+    nm.Font = Enum.Font.GothamBlack
+    nm.TextSize = 24
+    nm.Parent = Frame
+    
+    local cb = Instance.new("TextButton")
+    cb.Size = UDim2.new(0,100,0,30)
+    cb.Position = UDim2.new(0.5,-50,1,-40)
+    cb.BackgroundColor3 = AC
+    cb.BorderSizePixel = 0
+    cb.Text = "閉じる"
+    cb.TextColor3 = Color3.fromRGB(0,0,0)
+    cb.Font = Enum.Font.GothamBold
+    cb.Parent = Frame
+    local cb2 = Instance.new("UICorner") cb2.CornerRadius = UDim.new(0,8) cb2.Parent = cb
+    cb.MouseButton1Click:Connect(function() CGui:Destroy() end)
+end)
+
+-- ==================== 起動 ====================
+local function launch()
+    local SP = getGui() SP.Name = "KAMAKIRI_Splash"
+    local sl = Instance.new("TextLabel")
+    sl.Size = UDim2.new(1,0,0,100)
+    sl.Position = UDim2.new(0,0,0.5,-50)
+    sl.BackgroundTransparency = 1
+    sl.Text = "KAMAKIRI HUB"
+    sl.TextColor3 = AC
+    sl.TextScaled = true
+    sl.Font = Enum.Font.GothamBlack
+    sl.TextTransparency = 1
+    sl.Parent = SP
+    TW:Create(sl, TweenInfo.new(0.8), {TextTransparency=0}):Play()
+    task.wait(2)
+    TW:Create(sl, TweenInfo.new(0.6), {TextTransparency=1}):Play()
+    task.wait(0.7)
+    SP:Destroy()
+
+    -- ===== GUI本体 =====
+    local MG = getGui() MG.Name = "KAMAKIRI_HUB"
+    local Main = Instance.new("Frame")
+    Main.Size = UDim2.new(0,340,0,420)
+    Main.Position = UDim2.new(0.5,-170,0.5,-210)
+    Main.BackgroundColor3 = BG
+    Main.BorderSizePixel = 0
+    Main.Active = true
+    Main.Draggable = true
+    Main.Parent = MG
+    local mc = Instance.new("UICorner") mc.CornerRadius = UDim.new(0,12) mc.Parent = Main
+    local mst = Instance.new("UIStroke") mst.Color = AC mst.Thickness = 1.5 mst.Parent = Main
+
+    local TB = Instance.new("Frame")
+    TB.Size = UDim2.new(1,0,0,40)
+    TB.BackgroundColor3 = PANEL
+    TB.BorderSizePixel = 0
+    TB.Parent = Main
+    local tbc = Instance.new("UICorner") tbc.CornerRadius = UDim.new(0,12) tbc.Parent = TB
+
+    local TT = Instance.new("TextLabel")
+    TT.Size = UDim2.new(1,-100,1,0)
+    TT.Position = UDim2.new(0,12,0,0)
+    TT.BackgroundTransparency = 1
+    TT.Text = "KAMAKIRI HUB"
+    TT.TextColor3 = AC
+    TT.TextSize = 18
+    TT.Font = Enum.Font.GothamBold
+    TT.TextXAlignment = Enum.TextXAlignment.Left
+    TT.Parent = TB
+
+    local MinB = Instance.new("TextButton")
+    MinB.Size = UDim2.new(0,28,0,28)
+    MinB.Position = UDim2.new(1,-70,0,6)
+    MinB.BackgroundColor3 = AC
+    MinB.BorderSizePixel = 0
+    MinB.Text = "—"
+    MinB.TextColor3 = Color3.fromRGB(0,0,0)
+    MinB.TextSize = 20
+    MinB.Font = Enum.Font.GothamBold
+    MinB.Parent = TB
+    local minc = Instance.new("UICorner") minc.CornerRadius = UDim.new(0,8) minc.Parent = MinB
+
+    local ClsB = Instance.new("TextButton")
+    ClsB.Size = UDim2.new(0,28,0,28)
+    ClsB.Position = UDim2.new(1,-36,0,6)
+    ClsB.BackgroundColor3 = AC
+    ClsB.BorderSizePixel = 0
+    ClsB.Text = "×"
+    ClsB.TextColor3 = Color3.fromRGB(0,0,0)
+    ClsB.TextSize = 20
+    ClsB.Font = Enum.Font.GothamBold
+    ClsB.Parent = TB
+    local clsc = Instance.new("UICorner") clsc.CornerRadius = UDim.new(0,8) clsc.Parent = ClsB
+
+    local TabS = Instance.new("ScrollingFrame")
+    TabS.Size = UDim2.new(1,-12,0,40)
+    TabS.Position = UDim2.new(0,6,0,46)
+    TabS.BackgroundTransparency = 1
+    TabS.BorderSizePixel = 0
+    TabS.ScrollBarThickness = 3
+    TabS.ScrollBarImageColor3 = AC
+    TabS.ScrollingDirection = Enum.ScrollingDirection.X
+    TabS.CanvasSize = UDim2.new(0,0,0,0)
+    TabS.AutomaticCanvasSize = Enum.AutomaticSize.X
+    TabS.Parent = Main
+    local TLay = Instance.new("UIListLayout")
+    TLay.FillDirection = Enum.FillDirection.Horizontal
+    TLay.Padding = UDim.new(0,6)
+    TLay.SortOrder = Enum.SortOrder.LayoutOrder
+    TLay.Parent = TabS
+    local TPad = Instance.new("UIPadding") TPad.PaddingLeft = UDim.new(0,6) TPad.PaddingRight = UDim.new(0,6) TPad.Parent = TabS
+
+    local CT = Instance.new("Frame")
+    CT.Size = UDim2.new(1,-12,1,-100)
+    CT.Position = UDim2.new(0,6,0,92)
+    CT.BackgroundColor3 = PANEL
+    CT.BorderSizePixel = 0
+    CT.Parent = Main
+    local ctc = Instance.new("UICorner") ctc.CornerRadius = UDim.new(0,10) ctc.Parent = CT
+
+    local CS = Instance.new("ScrollingFrame")
+    CS.Size = UDim2.new(1,-8,1,-8)
+    CS.Position = UDim2.new(0,4,0,4)
+    CS.BackgroundTransparency = 1
+    CS.BorderSizePixel = 0
+    CS.ScrollBarThickness = 4
+    CS.ScrollBarImageColor3 = AC
+    CS.CanvasSize = UDim2.new(0,0,0,0)
+    CS.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    CS.Parent = CT
+    local CLay = Instance.new("UIListLayout") CLay.Padding = UDim.new(0,6) CLay.SortOrder = Enum.SortOrder.LayoutOrder CLay.Parent = CS
+    local CPad = Instance.new("UIPadding") CPad.PaddingTop=UDim.new(0,6) CPad.PaddingLeft=UDim.new(0,6) CPad.PaddingRight=UDim.new(0,6) CPad.PaddingBottom=UDim.new(0,6) CPad.Parent = CS
+
+    -- ヘルパー
+    local function clearC()
+        for _, c in ipairs(CS:GetChildren()) do
+            if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end
+        end
+    end
+
+    local function mkToggle(txt, cb)
+        local h = Instance.new("Frame")
+        h.Size = UDim2.new(1,0,0,40)
+        h.BackgroundColor3 = PANEL
+        h.BorderSizePixel = 0
+        h.Parent = CS
+        local hc = Instance.new("UICorner") hc.CornerRadius = UDim.new(0,8) hc.Parent = h
+        local hs = Instance.new("UIStroke") hs.Color = AC hs.Thickness = 1 hs.Parent = h
+        local lb = Instance.new("TextLabel")
+        lb.Size = UDim2.new(1,-90,1,0)
+        lb.Position = UDim2.new(0,12,0,0)
+        lb.BackgroundTransparency = 1
+        lb.Text = txt
+        lb.TextColor3 = TEXT_C
+        lb.TextSize = 14
+        lb.Font = Enum.Font.Gotham
+        lb.TextXAlignment = Enum.TextXAlignment.Left
+        lb.Parent = h
+        local tg = Instance.new("TextButton")
+        tg.Size = UDim2.new(0,60,0,26)
+        tg.Position = UDim2.new(1,-72,0.5,-13)
+        tg.BackgroundColor3 = Color3.fromRGB(60,60,70)
+        tg.BorderSizePixel = 0
+        tg.Text = "OFF"
+        tg.TextColor3 = TEXT_C
+        tg.TextSize = 12
+        tg.Font = Enum.Font.GothamBold
+        tg.Parent = h
+        local tc = Instance.new("UICorner") tc.CornerRadius = UDim.new(0,6) tc.Parent = tg
+        local st = false
+        tg.MouseButton1Click:Connect(function()
+            st = not st
+            tg.BackgroundColor3 = st and AC or Color3.fromRGB(60,60,70)
+            tg.Text = st and "ON" or "OFF"
+            tg.TextColor3 = st and Color3.fromRGB(0,0,0) or TEXT_C
+            if cb then cb(st) end
+        end)
+    end
+
+    local function mkSlider(txt, mn, mx, def, cb)
+        local h = Instance.new("Frame")
+        h.Size = UDim2.new(1,0,0,60)
+        h.BackgroundColor3 = PANEL
+        h.BorderSizePixel = 0
+        h.Parent = CS
+        local hc = Instance.new("UICorner") hc.CornerRadius = UDim.new(0,8) hc.Parent = h
+        local hs = Instance.new("UIStroke") hs.Color = AC hs.Thickness = 1 hs.Parent = h
+        local lb = Instance.new("TextLabel")
+        lb.Size = UDim2.new(1,-20,0,24)
+        lb.Position = UDim2.new(0,12,0,4)
+        lb.BackgroundTransparency = 1
+        lb.Text = txt .. ": " .. tostring(def)
+        lb.TextColor3 = TEXT_C
+        lb.TextSize = 14
+        lb.Font = Enum.Font.Gotham
+        lb.TextXAlignment = Enum.TextXAlignment.Left
+        lb.Parent = h
+        local bar = Instance.new("Frame")
+        bar.Size = UDim2.new(1,-24,0,10)
+        bar.Position = UDim2.new(0,12,0,38)
+        bar.BackgroundColor3 = Color3.fromRGB(60,60,70)
+        bar.BorderSizePixel = 0
+        bar.Parent = h
+        local bc = Instance.new("UICorner") bc.CornerRadius = UDim.new(1,0) bc.Parent = bar
+        local fill = Instance.new("Frame")
+        fill.Size = UDim2.new((def-mn)/(mx-mn),0,1,0)
+        fill.BackgroundColor3 = AC
+        fill.BorderSizePixel = 0
+        fill.Parent = bar
+        local fc = Instance.new("UICorner") fc.CornerRadius = UDim.new(1,0) fc.Parent = fill
+        local knob = Instance.new("Frame")
+        knob.Size = UDim2.new(0,20,0,20)
+        knob.Position = UDim2.new(fill.Size.X.Scale,-10,0.5,-10)
+        knob.BackgroundColor3 = TEXT_C
+        knob.BorderSizePixel = 0
+        knob.Parent = bar
+        local kc = Instance.new("UICorner") kc.CornerRadius = UDim.new(1,0) kc.Parent = knob
+        local dr = false
+        local function upd(inp)
+            local rx = math.clamp((inp.Position.X - bar.AbsolutePosition.X)/bar.AbsoluteSize.X,0,1)
+            local v = math.floor(mn + (mx-mn)*rx)
+            fill.Size = UDim2.new(rx,0,1,0)
+            knob.Position = UDim2.new(rx,-10,0.5,-10)
+            lb.Text = txt .. ": " .. tostring(v)
+            if cb then cb(v) end
+        end
+        bar.InputBegan:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then dr=true upd(i) end end)
+        bar.InputChanged:Connect(function(i) if dr and (i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseMovement) then upd(i) end end)
+        UIS.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.Touch or i.UserInputType==Enum.UserInputType.MouseButton1 then dr=false end end)
+    end
+
+    local function mkButton(txt, cb, col)
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(1,0,0,40)
+        b.BackgroundColor3 = col or PANEL
+        b.BorderSizePixel = 0
+        b.Text = txt
+        b.TextColor3 = TEXT_C
+        b.TextSize = 14
+        b.Font = Enum.Font.GothamBold
+        b.Parent = CS
+        local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0,8) c.Parent = b
+        local bs = Instance.new("UIStroke") bs.Color = AC bs.Thickness = 1 bs.Parent = b
+        b.MouseButton1Click:Connect(function() if cb then cb() end end)
+    end
+
+    -- タブ
+    local cats = {"グラブ","プレイヤー","ESP","オール","設定","製作者"}
+    local catBtns = {}
+
+    local function showCat(name)
+        clearC()
+        for k, b in pairs(catBtns) do
+            if k == name then b.BackgroundColor3 = AC b.TextColor3 = Color3.fromRGB(0,0,0)
+            else b.BackgroundColor3 = PANEL b.TextColor3 = TEXT_C end
+        end
+
+        -- ★ここから下はパート2以降で追加していきます
+        if name == "グラブ" then
+            -- パート2で追加
+        elseif name == "プレイヤー" then
+            -- パート3で追加
+        elseif name == "ESP" then
+            -- パート3で追加
+        elseif name == "オール" then
+            -- パート4で追加
+        elseif name == "設定" then
+            -- パート6で追加
+        elseif name == "製作者" then
+            local credit = Instance.new("TextLabel")
+            credit.Size = UDim2.new(1,0,0,60)
+            credit.BackgroundColor3 = PANEL
+            credit.BorderSizePixel = 0
+            credit.Text = "R_8y"
+            credit.TextColor3 = AC
+            credit.TextSize = 22
+            credit.Font = Enum.Font.GothamBlack
+            credit.Parent = CS
+            local cc = Instance.new("UICorner") cc.CornerRadius = UDim.new(0,8) cc.Parent = credit
+            local cs = Instance.new("UIStroke") cs.Color = AC cs.Thickness = 1 cs.Parent = credit
+        end
+    end
+
+    for i, cname in ipairs(cats) do
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(0,90,0,32)
+        b.BackgroundColor3 = PANEL
+        b.BorderSizePixel = 0
+        b.Text = cname
+        b.TextColor3 = TEXT_C
+        b.TextSize = 13
+        b.Font = Enum.Font.GothamBold
+        b.LayoutOrder = i
+        b.Parent = TabS
+        local bc = Instance.new("UICorner") bc.CornerRadius = UDim.new(0,8) bc.Parent = b
+        local bs = Instance.new("UIStroke") bs.Color = AC bs.Thickness = 1 bs.Parent = b
+        catBtns[cname] = b
+        b.MouseButton1Click:Connect(function() showCat(cname) end)
+    end
+
+    showCat("グラブ")
+
+    -- バツボタン：丸ボタン化
+    local ballBtn = nil
+    ClsB.MouseButton1Click:Connect(function()
+        Main.Visible = false
+        if ballBtn then ballBtn:Destroy() end
+        ballBtn = Instance.new("TextButton")
+        ballBtn.Size = UDim2.new(0,60,0,60)
+        ballBtn.Position = UDim2.new(0,20,0.5,-30)
+        ballBtn.BackgroundColor3 = AC
+        ballBtn.BorderSizePixel = 0
+        ballBtn.Text = "K"
+        ballBtn.TextColor3 = Color3.fromRGB(0,0,0)
+        ballBtn.TextSize = 24
+        ballBtn.Font = Enum.Font.GothamBlack
+        ballBtn.Active = true
+        ballBtn.Draggable = true
+        ballBtn.Parent = MG
+        local bbc = Instance.new("UICorner") bbc.CornerRadius = UDim.new(1,0) bbc.Parent = ballBtn
+        ballBtn.MouseButton1Click:Connect(function()
+            Main.Visible = true
+            ballBtn:Destroy()
+            ballBtn = nil
+        end)
+    end)
+
+    -- 横棒ボタン：コンパクト化
+    local compact = false
+    local origSize = Main.Size
+    MinB.MouseButton1Click:Connect(function()
+        compact = not compact
+        if compact then
+            Main.Size = UDim2.new(0,340,0,40)
+            CT.Visible = false
+            TabS.Visible = false
+        else
+            Main.Size = origSize
+            CT.Visible = true
+            TabS.Visible = true
+        end
+    end)
+end
+
+-- ==================== 認証 ====================
+local CORRECT_KEY = "prayingmantis"
+local done = false
+
+-- 製作者判定（キーなし）
+if string.lower(LP.Name) == "ryuse47" then
+    done = true
+    KG:Destroy()
+    Notify("KAMAKIRI HUB", "製作者として認証しました", 2)
+    task.wait(0.3)
+    launch()
+else
+    local function attempt()
+        if done then return end
+        if KB.Text == CORRECT_KEY then
+            done = true
+            KG:Destroy()
+            Notify("KAMAKIRI HUB", "認証成功", 2)
+            task.wait(0.3)
+            launch()
+        else
+            Notify("KAMAKIRI HUB", "キーが違います", 2)
+            KB.Text = ""
+        end
+    end
+    Kbtn.MouseButton1Click:Connect(attempt)
+    KB.FocusLost:Connect(function(e) if e then attempt() end end)
+end
