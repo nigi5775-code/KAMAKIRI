@@ -536,9 +536,15 @@ local function mkDropdown(txt, options, default, cb)
     sizeList()
 
     sel.MouseButton1Click:Connect(function()
-        list.Visible = not list.Visible
-    end)
-end
+    list.Visible = not list.Visible
+    if list.Visible then
+        -- hの位置をCT基準で計算
+        local hAbs = h.AbsolutePosition
+        local ctAbs = CT.AbsolutePosition
+        local relY = hAbs.Y - ctAbs.Y
+        list.Position = UDim2.new(1, -122, 0, relY + 42)
+    end
+end)
 
 -- プレイヤー一覧を取得する関数
 local function getPlayerList()
