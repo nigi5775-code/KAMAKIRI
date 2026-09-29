@@ -427,7 +427,146 @@ local function launch()
         local bs = Instance.new("UIStroke") bs.Color = AC bs.Thickness = 1 bs.Parent = b
         b.MouseButton1Click:Connect(function() if cb then cb() end end)
     end
+-- ドロップダウン用状態管理
+local DropdownState = {Selected = nil}
+local DropdownRefresh = nil
 
+local function mkDropdown(txt, options, default, cb)
+    local h = Instance.new("Frame")
+    h.Size = UDim2.new(1,0,0,40)
+    h.BackgroundColor3 = PANEL
+    h.BorderSizePixel = 0
+    h.Parent = CS
+    local hc = Instance.new("UICorner") hc.CornerRadius = UDim.new(0,8) hc.Parent = h
+    local hs = Instance.new("UIStroke") hs.Color = AC hs.Thickness = 1 hs.Parent = h
+
+    local lb = Instance.new("TextLabel")
+    lb.Size = UDim2.new(1,-140,1,0)
+    lb.Position = UDim2.new(0,12,0,0)
+    lb.BackgroundTransparency = 1
+    lb.Text = txt
+    lb.TextColor3 = TEXT_C
+    lb.TextSize = 14
+    lb.Font = Enum.Font.Gotham
+    lb.TextXAlignment = Enum.TextXAlignment.Left
+    lb.Parent = h
+
+    local sel = Instance.new("TextButton")
+    sel.Size = UDim2.new(0,110,0,26)
+    sel.Position = UDim2.new(1,-122,0.5,-13)
+    sel.BackgroundColor3 = Color3.fromRGB(60,60,70)
+    sel.BorderSizePixel = 0
+    sel.Text = default or "..."
+    sel.TextColor3 = TEXT_C
+    sel.TextSize = 12
+    sel.Font = Enum.Font.GothamBold
+    sel.TextTruncate = Enum.TextTruncate.AtEnd
+    sel.Parent = h
+    local sc = Instance.new("UICorner") sc.CornerRadius = UDim.new(0,6) sc.Parent = sel
+
+    local list = Instance.new("Frame")
+    list.Size = UDim2.new(0,150,0,0)
+    list.Position = UDim2.new(1,-122,1,4)
+    list.BackgroundColor3 = PANEL
+    list.BorderSizePixel = 0
+    list.Visible = false
+    list.ZIndex = 50
+    list.Parent = h
+    local lc = Instance.new("UICorner") lc.CornerRadius = UDim.new(0,8) lc.Parent = list
+    local ls = Instance.new("UIStroke") ls.Color = AC ls.Thickness = 1 ls.Parent = list
+
+    local lscroll = Instance.new("ScrollingFrame")
+    lscroll.Size = UDim2.new(1,0,1,0)
+    lscroll.BackgroundTransparency = 1
+    lscroll.BorderSizePixel = 0
+    lscroll.ScrollBarThickness = 3
+    lscroll.ScrollBarImageColor3 = AC
+    lscroll.CanvasSize = UDim2.new(0,0,0,0)
+    lscroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    lscroll.ZIndex = 51
+    lscroll.Parent = list
+    local llay = Instance.new("UIListLayout")
+    llay.Padding = UDim.new(0,3)
+    llay.SortOrder = Enum.SortOrder.LayoutOrder
+    llay.Parent = lscroll
+    local lpad = Instance.new("UIPadding")
+    lpad.PaddingTop = UDim.new(0,4)
+    lpad.PaddingLeft = UDim.new(0,4)
+    lpad.PaddingRight = UDim.new(0,4)
+    lpad.PaddingBottom = UDim.new(0,4)
+    lpad.Parent = lscroll
+
+    local function refresh(opts)
+        for _, c in ipairs(lscroll:GetChildren()) do
+            if c:IsA("TextButton") then c:Destroy() end
+        end
+        for i, opt in ipairs(opts) do
+            local ob = Instance.new("TextButton")
+            ob.Size = UDim2.new(1,-6,0,26)
+            ob.BackgroundColor3 = Color3.fromRGB(40,40,50)
+            ob.BorderSizePixel = 0
+            ob.Text = opt
+            ob.TextColor3 = TEXT_C
+            ob.TextSize = 12
+            ob.Font = Enum.Font.Gotham
+            ob.LayoutOrder = i
+            ob.ZIndex = 52
+            ob.Parent = lscroll
+            local oc = Instance.new("UICorner") oc.CornerRadius = UDim.new(0,6) oc.Parent = ob
+            ob.MouseButton1Click:Connect(function()
+                sel.Text = opt
+                list.Visible = false
+                if cb then cb(opt) end
+            end)
+        end
+    end
+
+    refresh(options)
+    DropdownRefresh = refresh
+
+    local function sizeList()
+        local count = math.min(#options, 6)
+        list.Size = UDim2.new(0,150,0,count * 29 + 8)
+    end
+    sizeList()
+
+    sel.MouseButton1Click:Connect(function()
+        list.Visible = not list.Visible
+    end)
+end
+
+-- プレイヤー一覧を取得する関数
+local function getPlayerList()
+    local t = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LP then
+            table.insert(t, p.Name)
+        end
+    end
+    table.sort(t)
+    return t
+end
+
+-- キック用：プレイヤーを上空へ飛ばす
+local function KickPlayer(targetName)
+    local target = Players:FindFirstChild(targetName)
+    if not target or not target.Character then return end
+    local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    local bv = Instance.new("BodyVelocity", hrp)
+    bv.Name = "KamakiriKick"
+    bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    bv.Velocity = Vector3.new(0, 100000, 0)
+    Debris:AddItem(bv, 3)
+    local charEvents = RepS:FindFirstChild("CharacterEvents")
+    local grabEvents = RepS:FindFirstChild("GrabEvents")
+    if grabEvents and grabEvents:FindFirstChild("DestroyGrabLine") then
+        pcall(function() grabEvents.DestroyGrabLine:FireServer(hrp) end)
+    end
+end
+
+-- キック用ループ状態
+local KickState = {Selected = nil, LoopOne = false, LoopAll = false}
     -- プレイヤー設定
     local PlayerSet = {Walkspeed=false, WsValue=1, InfJump=false, JumpPower=100, WSConn=nil, JPConn=nil}
 
