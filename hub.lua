@@ -12,7 +12,6 @@ local RepS = game:GetService("ReplicatedStorage")
 local Debris = game:GetService("Debris")
 local LP = Players.LocalPlayer
 
--- カラー
 local BG = Color3.fromRGB(15,15,20)
 local AC = Color3.fromRGB(0,255,100)
 local PANEL = Color3.fromRGB(25,25,32)
@@ -45,23 +44,18 @@ local function sendChat(m)
     end
 end
 
-sendChat("KAMAKIRI HUB")
-task.wait(1.2)
-sendChat("Fling Things and People")
-task.wait(1.2)
-sendChat("スクリプト")
+sendChat("KAMAKIRI hub Deepseek by gimini")
 task.wait(1.2)
 
-for _, n in ipairs({"KAMAKIRI_KEY","KAMAKIRI_HUB","KAMAKIRI_Splash","KAMAKIRI_CREDIT"}) do
+for _, n in ipairs({"KAMAKIRI_KEY","KAMAKIRI_HUB","KAMAKIRI_Splash"}) do
     local a = CG:FindFirstChild(n) if a then a:Destroy() end
     local b = LP:WaitForChild("PlayerGui"):FindFirstChild(n) if b then b:Destroy() end
 end
 
--- ==================== キー画面 ====================
 local KG = getGui() KG.Name = "KAMAKIRI_KEY"
 local KF = Instance.new("Frame")
-KF.Size = UDim2.new(0,300,0,230)
-KF.Position = UDim2.new(0.5,-150,0.5,-115)
+KF.Size = UDim2.new(0,300,0,180)
+KF.Position = UDim2.new(0.5,-150,0.5,-90)
 KF.BackgroundColor3 = BG
 KF.BorderSizePixel = 0
 KF.Active = true
@@ -118,64 +112,8 @@ Kbtn.Font = Enum.Font.GothamBold
 Kbtn.Parent = KF
 local c3 = Instance.new("UICorner") c3.CornerRadius = UDim.new(0,8) c3.Parent = Kbtn
 
-local CreditBtn = Instance.new("TextButton")
-CreditBtn.Size = UDim2.new(1,-40,0,30)
-CreditBtn.Position = UDim2.new(0,20,0,180)
-CreditBtn.BackgroundColor3 = PANEL
-CreditBtn.BorderSizePixel = 0
-CreditBtn.Text = "製作者を見る"
-CreditBtn.TextColor3 = AC
-CreditBtn.TextSize = 12
-CreditBtn.Font = Enum.Font.GothamBold
-CreditBtn.Parent = KF
-local c4 = Instance.new("UICorner") c4.CornerRadius = UDim.new(0,8) c4.Parent = CreditBtn
-local s4 = Instance.new("UIStroke") s4.Color = AC s4.Thickness = 1 s4.Parent = CreditBtn
+local done = false
 
-CreditBtn.MouseButton1Click:Connect(function()
-    local CGui = getGui() CGui.Name = "KAMAKIRI_CREDIT"
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(0,250,0,120)
-    Frame.Position = UDim2.new(0.5,-125,0.5,-60)
-    Frame.BackgroundColor3 = BG
-    Frame.BorderSizePixel = 0
-    Frame.Parent = CGui
-    local fc1 = Instance.new("UICorner") fc1.CornerRadius = UDim.new(0,12) fc1.Parent = Frame
-    local fs1 = Instance.new("UIStroke") fs1.Color = AC fs1.Thickness = 1.5 fs1.Parent = Frame
-    
-    local t = Instance.new("TextLabel")
-    t.Size = UDim2.new(1,0,0,30)
-    t.Position = UDim2.new(0,0,0,10)
-    t.BackgroundTransparency = 1
-    t.Text = "製作者"
-    t.TextColor3 = AC
-    t.Font = Enum.Font.GothamBold
-    t.TextSize = 16
-    t.Parent = Frame
-    
-    local nm = Instance.new("TextLabel")
-    nm.Size = UDim2.new(1,0,0,40)
-    nm.Position = UDim2.new(0,0,0,40)
-    nm.BackgroundTransparency = 1
-    nm.Text = "R_8y"
-    nm.TextColor3 = TEXT_C
-    nm.Font = Enum.Font.GothamBlack
-    nm.TextSize = 24
-    nm.Parent = Frame
-    
-    local cb = Instance.new("TextButton")
-    cb.Size = UDim2.new(0,100,0,30)
-    cb.Position = UDim2.new(0.5,-50,1,-40)
-    cb.BackgroundColor3 = AC
-    cb.BorderSizePixel = 0
-    cb.Text = "閉じる"
-    cb.TextColor3 = Color3.fromRGB(0,0,0)
-    cb.Font = Enum.Font.GothamBold
-    cb.Parent = Frame
-    local cb2 = Instance.new("UICorner") cb2.CornerRadius = UDim.new(0,8) cb2.Parent = cb
-    cb.MouseButton1Click:Connect(function() CGui:Destroy() end)
-end)
-
--- ==================== 起動 ====================
 local function launch()
     local SP = getGui() SP.Name = "KAMAKIRI_Splash"
     local sl = Instance.new("TextLabel")
@@ -188,13 +126,12 @@ local function launch()
     sl.Font = Enum.Font.GothamBlack
     sl.TextTransparency = 1
     sl.Parent = SP
-    TW:Create(sl, TweenInfo.new(0.8), {TextTransparency=0}):Play()
-    task.wait(2)
-    TW:Create(sl, TweenInfo.new(0.6), {TextTransparency=1}):Play()
-    task.wait(0.7)
+    TW:Create(sl, TweenInfo.new(0.6), {TextTransparency=0}):Play()
+    task.wait(1.5)
+    TW:Create(sl, TweenInfo.new(0.5), {TextTransparency=1}):Play()
+    task.wait(0.6)
     SP:Destroy()
 
-    -- ===== GUI本体（横長） =====
     local MG = getGui() MG.Name = "KAMAKIRI_HUB"
     local Main = Instance.new("Frame")
     Main.Size = UDim2.new(0,580,0,340)
@@ -400,7 +337,48 @@ local function launch()
         b.MouseButton1Click:Connect(function() if cb then cb() end end)
     end
 
-    local cats = {"グラブ","プレイヤー","ESP","オール","設定","製作者"}
+    -- プレイヤー設定
+    local PlayerSet = {Walkspeed=false, WsValue=1, InfJump=false, JumpPower=100, WSConn=nil, JPConn=nil}
+
+    local function updateWS()
+        if PlayerSet.WSConn then PlayerSet.WSConn:Disconnect() PlayerSet.WSConn = nil end
+        if PlayerSet.Walkspeed then
+            PlayerSet.WSConn = RS.Stepped:Connect(function()
+                local char = LP.Character
+                if char then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    if hrp and hum then
+                        hrp.CFrame = hrp.CFrame + hum.MoveDirection * (16 * PlayerSet.WsValue / 10)
+                    end
+                end
+            end)
+        end
+    end
+
+    local function updateJP()
+        if PlayerSet.JPConn then PlayerSet.JPConn:Disconnect() PlayerSet.JPConn = nil end
+        if PlayerSet.InfJump then
+            PlayerSet.JPConn = UIS.JumpRequest:Connect(function()
+                local char = LP.Character
+                if char then
+                    local hum = char:FindFirstChildOfClass("Humanoid")
+                    if hum then
+                        hum:ChangeState(Enum.HumanoidStateType.Freefall)
+                        task.wait()
+                        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+                        if hum.UseJumpPower == false then
+                            hum.JumpHeight = math.clamp(PlayerSet.JumpPower / 10, 7.2, 50)
+                        else
+                            hum.JumpPower = PlayerSet.JumpPower
+                        end
+                    end
+                end
+            end)
+        end
+    end
+
+    local cats = {"プレイヤー","アンチ","キック","キル","バリア","ラグ","製作者"}
     local catBtns = {}
 
     local function showCat(name)
@@ -410,15 +388,21 @@ local function launch()
             else b.BackgroundColor3 = PANEL b.TextColor3 = TEXT_C end
         end
 
-        if name == "グラブ" then
+        if name == "プレイヤー" then
+            mkToggle("Walkspeed", function(s) PlayerSet.Walkspeed = s updateWS() end)
+            mkSlider("Speed倍率", 1, 5, 1, function(v) PlayerSet.WsValue = v end)
+            mkToggle("無限ジャンプ", function(s) PlayerSet.InfJump = s updateJP() end)
+            mkSlider("Jump Power", 16, 500, 100, function(v) PlayerSet.JumpPower = v end)
+            mkSlider("FOV", 70, 120, 70, function(v) WS.CurrentCamera.FieldOfView = v end)
+        elseif name == "アンチ" then
             -- パート2
-        elseif name == "プレイヤー" then
-            -- パート3
-        elseif name == "ESP" then
-            -- パート3
-        elseif name == "オール" then
+        elseif name == "キック" then
             -- パート4
-        elseif name == "設定" then
+        elseif name == "キル" then
+            -- パート5
+        elseif name == "バリア" then
+            -- パート6
+        elseif name == "ラグ" then
             -- パート6
         elseif name == "製作者" then
             local credit = Instance.new("TextLabel")
@@ -452,7 +436,7 @@ local function launch()
         b.MouseButton1Click:Connect(function() showCat(cname) end)
     end
 
-    showCat("グラブ")
+    showCat("プレイヤー")
 
     local ballBtn = nil
     ClsB.MouseButton1Click:Connect(function()
@@ -494,9 +478,18 @@ local function launch()
     end)
 end
 
--- ==================== 認証 ====================
+LP.CharacterAdded:Connect(function()
+    task.wait(1.5)
+    local existing = CG:FindFirstChild("KAMAKIRI_HUB")
+    local existing2 = LP:WaitForChild("PlayerGui"):FindFirstChild("KAMAKIRI_HUB")
+    if existing2 and not existing then
+        pcall(function() existing2.Parent = CG end)
+    elseif not existing and not existing2 then
+        if done then launch() end
+    end
+end)
+
 local CORRECT_KEY = "prayingmantis"
-local done = false
 
 if string.lower(LP.Name) == "ryuse47" then
     done = true
