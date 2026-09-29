@@ -712,7 +712,55 @@ end)
     end
 end)
         elseif name == "キック" then
-            -- パート4
+    mkDropdown("対象プレイヤー", getPlayerList(), "選択...", function(v)
+        KickState.Selected = v
+    end)
+
+    mkButton("選択プレイヤーをキック", function()
+        if KickState.Selected then
+            KickPlayer(KickState.Selected)
+            NotifyOrion("キック実行: " .. KickState.Selected)
+        else
+            NotifyOrion("プレイヤーを選択してください")
+        end
+    end, Color3.fromRGB(200,50,50))
+
+    mkButton("全員キック", function()
+        local list = getPlayerList()
+        for _, name in ipairs(list) do
+            KickPlayer(name)
+        end
+        NotifyOrion("全員キック実行: " .. #list .. "人")
+    end, Color3.fromRGB(200,50,50))
+
+    mkToggle("ループキック（選択）", function(s)
+        KickState.LoopOne = s
+        if s then
+            task.spawn(function()
+                while KickState.LoopOne do
+                    if KickState.Selected then
+                        KickPlayer(KickState.Selected)
+                    end
+                    task.wait(0.15)
+                end
+            end)
+        end
+    end)
+
+    mkToggle("ループ全員キック", function(s)
+        KickState.LoopAll = s
+        if s then
+            task.spawn(function()
+                while KickState.LoopAll do
+                    local list = getPlayerList()
+                    for _, name in ipairs(list) do
+                        KickPlayer(name)
+                    end
+                    task.wait(0.15)
+                end
+            end)
+        end
+    end)
         elseif name == "キル" then
             -- パート5
         elseif name == "バリア" then
