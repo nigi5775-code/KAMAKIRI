@@ -118,6 +118,36 @@ local antiBlobmanActive, antiBlobmanTask = false, nil
 local antiExplosionEnabled, antiExplosionConn = false, nil
 local antiFireEnabled = false
 
+-- Anti Fire 実際の処理
+task.spawn(function()
+    local map = WS:WaitForChild("Map", 10)
+    if not map then return end
+    local hole = map:WaitForChild("Hole", 10)
+    if not hole then return end
+    local poison = hole:WaitForChild("PoisonBigHole", 10)
+    if not poison then return end
+    local ext = poison:WaitForChild("ExtinguishPart", 10)
+    if not ext then return end
+    
+    local originalPos = ext.CFrame
+    
+    RS.Heartbeat:Connect(function()
+        if antiFireEnabled then
+            local char = LP.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if root then
+                local isBurning = root:FindFirstChild("FireLight") or root:FindFirstChild("FireParticleEmitter")
+                if isBurning then
+                    ext.CFrame = root.CFrame
+                else
+                    if ext.CFrame ~= originalPos then ext.CFrame = originalPos end
+                end
+            end
+        else
+            if ext.CFrame ~= originalPos then ext.CFrame = originalPos end
+        end
+    end)
+end)
 local function antiGrabRecover(hum, root)
     if not (hum and root) then return end
     pcall(function()
