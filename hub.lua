@@ -455,16 +455,27 @@ local function launch()
             mkSlider("Jump Power", 16, 500, 100, function(v) PlayerSet.JumpPower = v end)
             mkSlider("FOV", 70, 120, 70, function(v) WS.CurrentCamera.FieldOfView = v end)
         elseif name == "アンチ" then
-            mkToggle("Anti Grab", function(s)
-    antiGrabActive = s
-    if antiGrabConn then antiGrabConn:Disconnect() antiGrabConn = nil end
-    for _, c in ipairs(antiGrabTripConns) do c:Disconnect() end
-    antiGrabTripConns = {}
-    if s then
-        if LP.Character then antiGrabSetup(LP.Character) end
-        table.insert(antiGrabTripConns, LP.CharacterAdded:Connect(antiGrabSetup))
-    end
-end)
+    mkToggle("Anti Grab", function(s)
+        antiGrabActive = s
+        if antiGrabConn then antiGrabConn:Disconnect() antiGrabConn = nil end
+        for _, c in ipairs(antiGrabTripConns) do c:Disconnect() end
+        antiGrabTripConns = {}
+        if s then
+            if LP.Character then antiGrabSetup(LP.Character) end
+            table.insert(antiGrabTripConns, LP.CharacterAdded:Connect(antiGrabSetup))
+            antiGrabConn = RS.Heartbeat:Connect(function()
+                local char = LP.Character
+                if not char then return end
+                local head = char:FindFirstChild("Head")
+                local po = head and head:FindFirstChild("PartOwner")
+                local ih = LP:FindFirstChild("IsHeld")
+                if (po or (ih and ih.Value == true)) then
+                    local SG2 = RepS:FindFirstChild("CharacterEvents") and RepS.CharacterEvents:FindFirstChild("Struggle")
+                    if SG2 then SG2:FireServer() end
+                end
+            end)
+        end
+    end)
 mkToggle("Anti Ragdoll", function(s)
     antiRagdollEnabled = s
     if s then
