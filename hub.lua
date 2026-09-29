@@ -476,7 +476,7 @@ local function mkDropdown(txt, options, default, cb)
     list.BorderSizePixel = 0
     list.Visible = false
     list.ZIndex = 50
-    list.Parent = h
+    list.Parent = CT
     local lc = Instance.new("UICorner") lc.CornerRadius = UDim.new(0,8) lc.Parent = list
     local ls = Instance.new("UIStroke") ls.Color = AC ls.Thickness = 1 ls.Parent = list
 
