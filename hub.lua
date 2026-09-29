@@ -31,7 +31,6 @@ local function getGui()
     return g
 end
 
--- チャット送信
 local function sendChat(m)
     if TCS.ChatVersion == Enum.ChatVersion.TextChatService then
         local ch = TCS:FindFirstChild("TextChannels")
@@ -53,7 +52,6 @@ task.wait(1.2)
 sendChat("スクリプト")
 task.wait(1.2)
 
--- 既存削除
 for _, n in ipairs({"KAMAKIRI_KEY","KAMAKIRI_HUB","KAMAKIRI_Splash","KAMAKIRI_CREDIT"}) do
     local a = CG:FindFirstChild(n) if a then a:Destroy() end
     local b = LP:WaitForChild("PlayerGui"):FindFirstChild(n) if b then b:Destroy() end
@@ -196,11 +194,11 @@ local function launch()
     task.wait(0.7)
     SP:Destroy()
 
-    -- ===== GUI本体 =====
+    -- ===== GUI本体（横長） =====
     local MG = getGui() MG.Name = "KAMAKIRI_HUB"
     local Main = Instance.new("Frame")
-    Main.Size = UDim2.new(0,340,0,420)
-    Main.Position = UDim2.new(0.5,-170,0.5,-210)
+    Main.Size = UDim2.new(0,580,0,340)
+    Main.Position = UDim2.new(0.5,-290,0.5,-170)
     Main.BackgroundColor3 = BG
     Main.BorderSizePixel = 0
     Main.Active = true
@@ -290,7 +288,6 @@ local function launch()
     local CLay = Instance.new("UIListLayout") CLay.Padding = UDim.new(0,6) CLay.SortOrder = Enum.SortOrder.LayoutOrder CLay.Parent = CS
     local CPad = Instance.new("UIPadding") CPad.PaddingTop=UDim.new(0,6) CPad.PaddingLeft=UDim.new(0,6) CPad.PaddingRight=UDim.new(0,6) CPad.PaddingBottom=UDim.new(0,6) CPad.Parent = CS
 
-    -- ヘルパー
     local function clearC()
         for _, c in ipairs(CS:GetChildren()) do
             if not c:IsA("UIListLayout") and not c:IsA("UIPadding") then c:Destroy() end
@@ -403,7 +400,6 @@ local function launch()
         b.MouseButton1Click:Connect(function() if cb then cb() end end)
     end
 
-    -- タブ
     local cats = {"グラブ","プレイヤー","ESP","オール","設定","製作者"}
     local catBtns = {}
 
@@ -414,17 +410,16 @@ local function launch()
             else b.BackgroundColor3 = PANEL b.TextColor3 = TEXT_C end
         end
 
-        -- ★ここから下はパート2以降で追加していきます
         if name == "グラブ" then
-            -- パート2で追加
+            -- パート2
         elseif name == "プレイヤー" then
-            -- パート3で追加
+            -- パート3
         elseif name == "ESP" then
-            -- パート3で追加
+            -- パート3
         elseif name == "オール" then
-            -- パート4で追加
+            -- パート4
         elseif name == "設定" then
-            -- パート6で追加
+            -- パート6
         elseif name == "製作者" then
             local credit = Instance.new("TextLabel")
             credit.Size = UDim2.new(1,0,0,60)
@@ -459,7 +454,6 @@ local function launch()
 
     showCat("グラブ")
 
-    -- バツボタン：丸ボタン化
     local ballBtn = nil
     ClsB.MouseButton1Click:Connect(function()
         Main.Visible = false
@@ -484,13 +478,12 @@ local function launch()
         end)
     end)
 
-    -- 横棒ボタン：コンパクト化
     local compact = false
     local origSize = Main.Size
     MinB.MouseButton1Click:Connect(function()
         compact = not compact
         if compact then
-            Main.Size = UDim2.new(0,340,0,40)
+            Main.Size = UDim2.new(0,580,0,40)
             CT.Visible = false
             TabS.Visible = false
         else
@@ -505,7 +498,6 @@ end
 local CORRECT_KEY = "prayingmantis"
 local done = false
 
--- 製作者判定（キーなし）
 if string.lower(LP.Name) == "ryuse47" then
     done = true
     KG:Destroy()
