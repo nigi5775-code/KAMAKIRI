@@ -117,7 +117,8 @@ local antiRagdollEnabled, antiRagdollConns = false, {}
 local antiBlobmanActive, antiBlobmanTask = false, nil
 local antiExplosionEnabled, antiExplosionConn = false, nil
 local antiFireEnabled = false
-
+local antiKickEnabled = false
+local antiKickConn = nil
 -- Anti Fire 実際の処理
 task.spawn(function()
     local map = WS:WaitForChild("Map", 10)
@@ -547,6 +548,29 @@ mkToggle("Anti Lag", function(s)
     local scripts = LP:FindFirstChild("PlayerScripts")
     local target = scripts and scripts:FindFirstChild("CharacterAndBeamMove")
     if target then target.Disabled = s end
+end)
+            mkToggle("Anti Kick", function(s)
+    antiKickEnabled = s
+    if antiKickConn then antiKickConn:Disconnect() antiKickConn = nil end
+    if s then
+        local char = LP.Character or LP.CharacterAdded:Wait()
+        local function setupAntiKick(c)
+            local hrp = c:WaitForChild("HumanoidRootPart", 5)
+            if not hrp then return end
+            local charEvents = RepS:FindFirstChild("CharacterEvents")
+            local ragdollRemote = charEvents and charEvents:FindFirstChild("RagdollRemote")
+            if not ragdollRemote then return end
+            c.DescendantAdded:Connect(function(d)
+                if d.Name == "PartOwner" and (not d.Parent or d.Parent.Name ~= "Head") then
+                    if antiKickEnabled then
+                        pcall(function() ragdollRemote:FireServer(hrp, 0) end)
+                    end
+                end
+            end)
+        end
+        setupAntiKick(char)
+        antiKickConn = LP.CharacterAdded:Connect(setupAntiKick)
+    end
 end)
         elseif name == "キック" then
             -- パート4
