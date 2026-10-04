@@ -3901,3 +3901,422 @@ blobkill:AddToggle("blobkillLoop", {
         end
     end
 })
+
+-- ===== 分割10: Target タブ 続き =====
+blobkill:AddToggle("spamkickbl", {
+    Text = "ループキック(スパム)",
+    Default = false,
+    Settings = false,
+    Callback = function(on)
+        Config.SpamkickblT = on
+        
+        local targetName = Config.PlayerList and Config.PlayerList[1]
+        local targetPlayer = targetName and service.Players:FindFirstChild(targetName)
+
+        if on and not targetPlayer then
+            Config.SpamkickblT = false
+            return
+        end
+        local char = localPlayer.Character
+        local hum = char and char:FindFirstChild("Humanoid")
+        local seat = hum and hum.SeatPart
+        if on and (not seat or seat.Parent.Name ~= "CreatureBlobman") then
+            Config.SpamkickblT = false
+            return
+        end
+        if not on then
+            Config.SpamkickblT = false
+            return
+        end
+        task.spawn(function()
+            local blob = seat.Parent
+            local blobRoot = blob:FindFirstChild("HumanoidRootPart") or blob.PrimaryPart
+            local scriptObj = blob:FindFirstChild("BlobmanSeatAndOwnerScript")
+            local CG = scriptObj and scriptObj:FindFirstChild("CreatureGrab")
+            local CD = scriptObj and scriptObj:FindFirstChild("CreatureDrop")
+            local R_Det = blob:FindFirstChild("RightDetector")
+            local R_Weld = R_Det and (R_Det:FindFirstChild("RightWeld") or R_Det:FindFirstChildWhichIsA("Weld"))
+            local SavedPos = blobRoot.CFrame
+            local packetCount = 0
+            local wasDead = false
+            local lockPos = SavedPos * CFrame.new(0, 19, 0)
+            
+            local function TeleportToTarget()
+                local curTargetName = Config.PlayerList and Config.PlayerList[1]
+                local curTarget = curTargetName and service.Players:FindFirstChild(curTargetName)
+                if curTarget and curTarget.Character then
+                    local tRoot = curTarget.Character:FindFirstChild("HumanoidRootPart")
+                    if tRoot and blobRoot then
+                        blobRoot.CFrame = tRoot.CFrame
+                        blobRoot.Velocity = Vector3.zero
+                        if CG and R_Det then CG:FireServer(R_Det, tRoot, R_Weld) end
+                        if CreateGrabLine then CreateGrabLine:FireServer(tRoot, Vector3.zero, tRoot.Position, false) end
+                        local startTime = tick()
+                        while tick() - startTime < 0.7 do
+                            if SetNetworkOwner and tRoot.Parent then
+                                SetNetworkOwner:FireServer(tRoot, tRoot.CFrame)
+                            end
+                            service.RunService.Heartbeat:Wait()
+                        end
+                        blobRoot.CFrame = SavedPos
+                        blobRoot.Velocity = Vector3.zero
+                        startTime = tick()
+                        while tick() - startTime < 0.7 do
+                            if SetNetworkOwner and tRoot.Parent then
+                                SetNetworkOwner:FireServer(tRoot, tRoot.CFrame)
+                            end
+                            service.RunService.Heartbeat:Wait()
+                        end
+                    end
+                end
+            end
+
+            TeleportToTarget()
+            while Config.SpamkickblT do
+                local curTargetName = Config.PlayerList and Config.PlayerList[1]
+                local curTarget = curTargetName and service.Players:FindFirstChild(curTargetName)
+
+                if not curTarget or not curTarget.Parent or not curTarget.Character then
+                    Config.SpamkickblT = false
+                    break
+                end
+                local tChar = curTarget.Character
+                local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+                local tHum = tChar and tChar:FindFirstChild("Humanoid")
+                if not tHum or not tRoot then
+                    service.RunService.Heartbeat:Wait()
+                    continue
+                end
+                if tHum.Health > 0 and wasDead then
+                    wasDead = false
+                    TeleportToTarget()
+                    service.RunService.Heartbeat:Wait()
+                    continue
+                end
+                if tHum.Health <= 0 then
+                    wasDead = true
+                    service.RunService.Heartbeat:Wait()
+                    continue
+                end
+                blobRoot.CFrame = SavedPos
+                blobRoot.Velocity = Vector3.zero
+                tRoot.CFrame = lockPos
+                tRoot.Velocity = Vector3.zero
+                tRoot.RotVelocity = Vector3.zero
+                if tRoot.AssemblyLinearVelocity then
+                    tRoot.AssemblyLinearVelocity = Vector3.zero
+                    tRoot.AssemblyAngularVelocity = Vector3.zero
+                end
+                if SetNetworkOwner then SetNetworkOwner:FireServer(tRoot, lockPos) end
+                packetCount = packetCount + 1
+                if packetCount >= 2 then
+                    packetCount = 0
+                    tHum.PlatformStand = true
+                    tHum.Sit = true
+                    if R_Det then
+                        local weld = R_Det:FindFirstChild("RightWeld") or R_Det:FindFirstChildWhichIsA("Weld")
+                        if weld and CD then CD:FireServer(weld) end
+                    end
+                    if DestroyGrabLine then DestroyGrabLine:FireServer(tRoot) end
+                    if R_Det and CG then CG:FireServer(R_Det, tRoot, R_Weld) end
+                    if CreateGrabLine then CreateGrabLine:FireServer(tRoot, Vector3.zero, tRoot.Position, false) end
+                end
+                service.RunService.Heartbeat:Wait()
+            end
+            Config.SpamkickblT = false
+            if blobRoot then
+                blobRoot.CFrame = SavedPos
+                blobRoot.Velocity = Vector3.zero
+            end
+        end)
+    end
+})
+
+DestroyGucci:AddButton({
+    Text = "グッチ破壊 [ブロブ]",
+    Func = function()
+        local c, h = GetLocalCharAndHum()
+        if not c or not h then return end
+        local targets = Config.PlayerList or {}
+        if type(targets) == "string" then targets = {targets} end
+        for _, plrName in ipairs(targets) do
+            local targetPLR = service.Players:FindFirstChild(plrName)
+            local targetChar = targetPLR and targetPLR.Character
+            local targetRoot = targetChar and targetChar:FindFirstChild("HumanoidRootPart")
+            local targetHum = targetChar and targetChar:FindFirstChild("Humanoid")
+            if targetRoot and targetHum then
+                local blob = Config.GucciBlob
+                local vehicleSeat = blob and blob:FindFirstChild("VehicleSeat")
+                if not blob or not vehicleSeat or vehicleSeat.Occupant ~= h then
+                    blob = h.SeatPart and h.SeatPart:FindFirstAncestor("CreatureBlobman")
+                end
+                if not blob then
+                    local inv = workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                    local hrp = c:FindFirstChild("HumanoidRootPart")
+                    if not hrp then return end
+                    if InPlot.Value and not InOwnedPlot.Value then
+                        InPlot:GetPropertyChangedSignal("Value"):Wait()
+                    end
+                    if not CanSpawnToy.Value then
+                        CanSpawnToy:GetPropertyChangedSignal("Value"):Wait()
+                    end
+                    local container
+                    if InOwnedPlot.Value then
+                        if Config.LastHouse == nil
+                            or Config.LastPlotOwner == nil
+                            or Config.LastPlotOwner.Parent == nil then
+                            for i = 1, 5 do
+                                local plot = workspace.Plots:FindFirstChild("Plot" .. i)
+                                local sign = plot and plot:FindFirstChild("PlotSign")
+                                local owners = sign and sign:FindFirstChild("ThisPlotsOwners")
+                                if owners then
+                                    for _, owner in pairs(owners:GetChildren()) do
+                                        if owner.Value == localPlayer.Name then
+                                            Config.LastHouse = workspace.PlotItems:FindFirstChild("Plot" .. i)
+                                            Config.LastPlotOwner = owner
+                                            break
+                                        end
+                                    end
+                                end
+                                if Config.LastHouse then break end
+                            end
+                        end
+                        container = Config.LastHouse
+                    else
+                        container = inv
+                    end
+                    if not container then return end
+                    local spawnedObject
+                    local connection = container.ChildAdded:Connect(function(child)
+                        if child.Name == "CreatureBlobman" then
+                            spawnedObject = child
+                        end
+                    end)
+                    task.spawn(function()
+						pcall(function()
+							spawntoy(
+								"CreatureBlobman",
+								hrp.CFrame * CFrame.new(0, 14, 20),
+								Vector3.zero
+							)
+						end)
+					end)
+                    local start = tick()
+                    repeat
+                        task.wait()
+                    until spawnedObject or tick() - start > 2.5
+                    connection:Disconnect()
+                    blob = spawnedObject
+                end
+                if blob then
+                    local oldCF = c:GetPivot()
+                    targetRoot.Massless = false
+                    local seat = FWD(blob, "VehicleSeat")
+                    if seat then
+                        seat:Sit(h)
+                        local waitStart = tick()
+                        while not h.SeatPart and tick() - waitStart < 3 do
+                            task.wait()
+                        end
+                        if h.SeatPart then
+                            local script = FWD(blob, "BlobmanSeatAndOwnerScript")
+                            local CreatureGrab = FWD(script, "CreatureGrab")
+                            local CreatureRelease = FWD(script, "CreatureRelease")
+                            local RightDetector = FWD(blob, "RightDetector")
+                            local RightWeld = RightDetector and FWD(RightDetector, "RightWeld")
+                            blob:PivotTo(targetRoot.CFrame)
+                            task.wait(0.15)
+                            for _ = 1, 15 do
+                                CreatureGrab:FireServer(RightDetector, targetRoot, RightWeld)
+                                CreatureRelease:FireServer(RightWeld, targetRoot)
+                                targetRoot.Massless = false
+                                for _ = 1, 10 do
+                                    targetHum.Sit = true
+                                end
+                                task.wait()
+                            end
+                            c:PivotTo(oldCF)
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+DestroyGucci:AddButton({
+    Text = "グッチ破壊[ジャンプ/座り]",
+    Func = function()
+        local c, h = GetLocalCharAndHum()
+        if not c or not h then return end
+        local targets = Config.PlayerList or {}
+        if type(targets) == "string" then targets = {targets} end
+        local oldCF = c:GetPivot()
+        for _, plrName in ipairs(targets) do
+            local blobs = {}
+            local tarInv = workspace:FindFirstChild(plrName .. "SpawnedInToys")
+            if tarInv then
+                for _, v in pairs(tarInv:GetChildren()) do
+                    if v.Name == "CreatureBlobman" or v.Name:sub(1, 7) == "Tractor" then
+                        table.insert(blobs, v)
+                    end
+                end
+            end
+            for _, plot in pairs(workspace.Plots:GetChildren()) do
+                for _, owner in pairs(plot.PlotSign.ThisPlotsOwners:GetChildren()) do
+                    if owner.Value == plrName then
+                        local toyFolder = workspace.PlotItems:FindFirstChild(plot.Name)
+
+                        if toyFolder then
+                            for _, v in pairs(toyFolder:GetChildren()) do
+                                if v.Name == "CreatureBlobman" or v.Name:sub(1, 7) == "Tractor" then
+                                    table.insert(blobs, v)
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+            for _, v in pairs(blobs) do
+                for _ = 1, 2 do
+                    local seat = v:FindFirstChild("VehicleSeat")
+                    if not seat then break end
+                    seat:Sit(h)
+                    local waitStart = tick()
+                    while not seat.Occupant and tick() - waitStart < 2 do
+                        task.wait()
+                    end
+                    c:PivotTo(oldCF)
+                    h:ChangeState(Enum.HumanoidStateType.Jumping)
+                    local stopPart = c.PrimaryPart or c
+                    if stopPart:IsA("BasePart") then
+                        stopPart.AssemblyLinearVelocity = Vector3.zero
+                        stopPart.AssemblyAngularVelocity = Vector3.zero
+                    end
+                    task.wait(0.1)
+                end
+                local stopPart = c.PrimaryPart or c
+                if stopPart:IsA("BasePart") then
+                    stopPart.AssemblyLinearVelocity = Vector3.zero
+                    stopPart.AssemblyAngularVelocity = Vector3.zero
+                end
+                c:PivotTo(oldCF)
+            end
+        end
+    end
+})
+
+RemoveKickanti:AddToggle("RemoveWdantikick", {
+    Text = "アンチキック解除 [WD]",
+    Default = false,
+    Callback = function(Value)
+        Config.TarAntiAntikickWD = Value
+        if Value then 
+            local WD = inv:FindFirstChild("SprayCanWD")
+            local SoundPart = WD and WD:FindFirstChild("SoundPart")
+            local targetName = Config.PlayerList and Config.PlayerList[1]
+            Config.TarAntikickRoot = targetName and service.Players:FindFirstChild(targetName) and service.Players:FindFirstChild(targetName).Character and service.Players:FindFirstChild(targetName).Character:FindFirstChild("HumanoidRootPart")
+
+            if not WD then 
+                WD = spawntoy("SprayCanWD", CFrame.new(0, 5, 0))
+                repeat task.wait() until WD and WD:FindFirstChild("SoundPart") or not Config.TarAntiAntikickWD
+                SoundPart = WD:FindFirstChild("SoundPart") or WD:WaitForChild("SoundPart",3)
+                
+                if WD then
+                    for _,v in pairs(WD:GetChildren()) do 
+                        if v:IsA("BasePart") and v.Name ~= "GrabParts" then  
+                            v.CanCollide = false
+                        end
+                    end
+                end
+
+                task.delay(1, function()
+                    if not WD then return end
+                    local ToCheckName = WD.Name
+                    local OriginalName = WD.Name
+                    local index = nil
+                    for i,v in pairs(inv:GetChildren()) do 
+                        if v.Name == ToCheckName then index = i end 
+                    end
+                    if index == nil then return end 
+                    local contents = localPlayer.PlayerGui.MenuGui.Menu.TabContents.ToyDestroy.Contents
+                    for i,v in ipairs(contents:GetChildren()) do
+                        if v.Name == OriginalName and i == index then
+                            local view = v.ViewItemButton
+                            view.Text = "Anti-AntiKick"
+                            view.TextScaled = true
+                            view.LowResImage.Image = ""
+                        end
+                    end
+                end)
+            end
+
+            local HitBox = FWD(WD,"Hitbox")
+            repeat  
+                if HitBox then
+                    SetNetworkOwner:FireServer(HitBox, HitBox.CFrame)
+                end
+                task.wait(0.05)
+            until not HitBox.Parent or not Config.TarAntiAntikickWD or HitBox:FindFirstChild("PartOwner")
+
+            while Config.TarAntiAntikickWD and task.wait(0.2) do
+                SoundPart = WD and WD.Parent and WD:FindFirstChild("SoundPart")
+                targetName = Config.PlayerList and Config.PlayerList[1]
+                Config.TarAntikickRoot = targetName and service.Players:FindFirstChild(targetName) and service.Players:FindFirstChild(targetName).Character and service.Players:FindFirstChild(targetName).Character:FindFirstChild("HumanoidRootPart")
+                if not Config.TarAntikickRoot then  
+                    repeat
+                        targetName = Config.PlayerList and Config.PlayerList[1]
+                        Config.TarAntikickRoot = targetName and service.Players:FindFirstChild(targetName) and service.Players:FindFirstChild(targetName).Character and service.Players:FindFirstChild(targetName).Character:FindFirstChild("HumanoidRootPart")
+                        task.wait(0.1)
+                    until Config.TarAntikickRoot or not Config.TarAntiAntikickWD
+                end
+                if not SoundPart then  
+                    WD = spawntoy("SprayCanWD", CFrame.new(0, 5, 0))
+                    repeat task.wait() until WD and WD:FindFirstChild("SoundPart") or not Config.TarAntiAntikickWD
+                    SoundPart = WD:FindFirstChild("SoundPart") or WD:WaitForChild("SoundPart",3)
+                    
+                    if WD then
+                        for _,v in pairs(WD:GetChildren()) do 
+                            if v:IsA("BasePart") and v.Name ~= "GrabParts" then  
+                                v.CanCollide = false
+                            end
+                        end
+                    end
+
+                    HitBox = FWD(WD,"Hitbox")
+                    repeat  
+                        if HitBox then
+                            SetNetworkOwner:FireServer(HitBox, HitBox.CFrame)
+                        end
+                        task.wait(0.05)
+                    until not HitBox.Parent or HitBox:FindFirstChild("PartOwner") or not Config.TarAntiAntikickWD
+                    
+                    task.delay(1, function()
+                        if not WD then return end
+                        local ToCheckName = WD.Name
+                        local OriginalName = WD.Name
+                        local index = nil
+                        for i,v in pairs(inv:GetChildren()) do 
+                            if v.Name == ToCheckName then index = i end 
+                        end
+                        if index == nil then return end 
+                        local contents = localPlayer.PlayerGui.MenuGui.Menu.TabContents.ToyDestroy.Contents
+                        for i,v in ipairs(contents:GetChildren()) do
+                            if v.Name == OriginalName and i == index then
+                                local view = v.ViewItemButton
+                                view.Text = "Anti-Antikick"
+                                view.TextScaled = true
+                                view.LowResImage.Image = ""
+                            end
+                        end
+                    end)
+                end
+                SoundPart.CFrame = Config.TarAntikickRoot.CFrame * CFrame.new(0,0,4)
+                task.wait()
+                SoundPart.CFrame = CFrame.new(-382.838318, 41.6491699, 665.570251)
+                SoundPart.AssemblyAngularVelocity = Vector3.zero
+                SoundPart.AssemblyLinearVelocity = Vector3.zero
+            end
+        end
+    end
+})
