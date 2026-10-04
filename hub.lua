@@ -1290,3 +1290,417 @@ LeftGroupBox:AddDropdown("atamode", {
         Config.SelectAutoatakka = value
     end
 })
+
+-- ===== 分割5: Defense タブ 後半 =====
+LeftGroupBox:AddToggle("AntikillB", {
+    Text = "アンチブロブ(キル)",
+    CurrentValue = false,
+    Callback = function(Value)
+        Config.Blobkilltest = Value
+        if Value then
+            Config.BlobkilltestCon = task.spawn(function()
+                while Config.Blobkilltest do
+                    local char = GetCharacter()
+                    if char then
+                        local hum = char:FindFirstChild("Humanoid")
+                        local hrp = char:FindFirstChild("HumanoidRootPart")
+                        if hum and hrp and hum.Health > 0 then
+                            hum.Sit = true
+                            pcall(function()
+                                hum:ChangeState(Enum.HumanoidStateType.Running)
+                            end)
+                            if Camera then
+                                local lookVec = Camera.CFrame.LookVector
+                                hrp.CFrame = CFrame.new(hrp.Position, hrp.Position + Vector3.new(lookVec.X, 0, lookVec.Z))
+                            end
+                        end
+                    end
+                    task.wait()
+                end
+            end)
+        else
+            if Config.BlobkilltestCon then
+                task.cancel(Config.BlobkilltestCon)
+                Config.BlobkilltestCon = nil
+            end
+            local char = GetCharacter()
+            local hum = char and char:FindFirstChild("Humanoid")
+            if hum and hum.Health > 0 then
+                hum.Sit = false
+                pcall(function()
+                    hum:ChangeState(Enum.HumanoidStateType.Running)
+                end)
+            end
+        end
+    end,
+})
+
+LeftGroupBox:AddToggle("AntiBLobAura", {
+    Text = "アンチブロブ(オーラ)",
+    Default = false,
+    Callback = function(enabled)
+        if enabled then
+            if Config.AntiblobauraCon then Config.AntiblobauraCon:Disconnect() end
+            Config.AntiblobauraCon = service.RunService.Heartbeat:Connect(function()
+                local myCharacter = GetCharacter()
+                local myRootPart = myCharacter and myCharacter:FindFirstChild("HumanoidRootPart")
+                if not myRootPart then return end
+                for _, player in pairs(service.Players:GetPlayers()) do
+                    if player ~= localPlayer then
+                        local playerCharacter = player.Character
+                        local playerRootPart = playerCharacter and playerCharacter:FindFirstChild("HumanoidRootPart")
+                        local playerHumanoid = playerCharacter and playerCharacter:FindFirstChild("Humanoid")
+                        if playerRootPart and playerHumanoid and playerHumanoid.SeatPart then
+                            local seatParent = playerHumanoid.SeatPart.Parent
+                            if seatParent and seatParent.Name == "CreatureBlobman" then
+                                local distance = (playerRootPart.Position - myRootPart.Position).Magnitude
+                                if distance <= 25 then
+                                    SetNetworkOwner:FireServer(playerRootPart, playerRootPart.CFrame)
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        else
+            if Config.AntiblobauraCon then
+                Config.AntiblobauraCon:Disconnect()
+                Config.AntiblobauraCon = nil
+            end
+        end
+    end,
+})
+
+LeftGroupBox:AddToggle("ankiltp", {
+    Text = "アンチキル(家)",
+    Default = false,
+    Callback = function(val)
+        Config.AntikillHouseT = val
+        if Config.AntiKillHouseCon then
+            Config.AntiKillHouseCon:Disconnect()
+            Config.AntiKillHouseCon = nil
+        end
+        if val then
+            Config.AntiKillHouseCon = service.RunService.Heartbeat:Connect(function()
+                local char = localPlayer.Character
+                if char and char:FindFirstChild("HumanoidRootPart") then
+                    char.HumanoidRootPart.CFrame = CFrame.new(Config.antiKillHousePos)
+                end
+            end)
+        end
+    end
+})
+
+LeftGroupBox:AddToggle("ankilby", {
+    Text = "アンチキル(バイパス)",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if Config.IsBypassRun then return end
+            Config.IsBypassRun = true
+            originalFallenHeight = service.Workspace.FallenPartsDestroyHeight
+            service.Workspace.FallenPartsDestroyHeight = 0 / 0
+            Camera = service.Workspace.CurrentCamera
+            if Camera then
+                if Config.cameraTargetPart then
+                    Config.cameraTargetPart:Destroy()
+                    Config.cameraTargetPart = nil
+                end
+                Config.cameraTargetPart = Instance.new("Part")
+                Config.cameraTargetPart.Name = "BypassCameraTarget"
+                Config.cameraTargetPart.Size = Vector3.new(1, 1, 1)
+                Config.cameraTargetPart.Transparency = 1
+                Config.cameraTargetPart.Anchored = true
+                Config.cameraTargetPart.CanCollide = false
+                local char = localPlayer.Character
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    Config.cameraTargetPart.CFrame = root.CFrame
+                    Config.lastOriginalCFrame = root.CFrame
+                elseif Config.lastOriginalCFrame then
+                    Config.cameraTargetPart.CFrame = Config.lastOriginalCFrame
+                else
+                    Config.cameraTargetPart.CFrame = CFrame.new()
+                end
+                Config.cameraTargetPart.Parent = service.Workspace
+                Camera.CameraSubject = Config.cameraTargetPart
+                Camera.CameraType = Enum.CameraType.Custom
+            end
+            loopCoroutine = coroutine.wrap(function()
+                while Config.IsBypassRun do
+                    if not localPlayer.Character then
+                        task.wait(0.5)
+                    else
+                        local char = localPlayer.Character
+                        if char then
+                            local root = char:FindFirstChild("HumanoidRootPart")
+                            if root then
+                                if Config.lastOriginalCFrame == nil then
+                                    Config.lastOriginalCFrame = root.CFrame
+                                end
+                                
+                                local original = root.CFrame
+                                local startTime = tick()
+                                local radius = 10000
+
+                                while tick() - startTime < 1 and Config.IsBypassRun do
+                                    if not localPlayer.Character or not root.Parent then
+                                        break
+                                    end
+                                    
+                                    local t = tick() * 12
+                                    local x = math.cos(t) * radius
+                                    local z = math.sin(t) * radius
+                                    root.CFrame = original + Vector3.new(x, -10000, z)
+                                    
+                                    service.RunService.RenderStepped:Wait()
+                                end
+
+                                if Config.IsBypassRun and root and root.Parent then
+                                    root.CFrame = original
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.0001)
+                end
+            end)
+            loopCoroutine()
+        else
+            Config.IsBypassRun = false
+            loopCoroutine = nil
+            local char = localPlayer.Character
+            if char and Config.lastOriginalCFrame then
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if root then
+                    root.CFrame = Config.lastOriginalCFrame
+                end
+            end
+            if originalFallenHeight then
+                service.Workspace.FallenPartsDestroyHeight = originalFallenHeight
+            else
+                service.Workspace.FallenPartsDestroyHeight = -100
+            end
+            Camera = service.Workspace.CurrentCamera
+            if Camera then
+                local char = localPlayer.Character
+                if char then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        Camera.CameraSubject = humanoid
+                    end
+                end
+                Camera.CameraType = Enum.CameraType.Custom
+            end
+            if Config.cameraTargetPart then
+                Config.cameraTargetPart:Destroy()
+                Config.cameraTargetPart = nil
+            end
+        end
+    end
+})
+
+LeftGroupBox:AddToggle("Invisi", {
+	Text = "透明化",
+	Default = false,
+	Callback = function(enabled)
+		Invisibility = Invisibility or {}
+		Invisibility.noclipEnabled = enabled
+		Invisibility.cameraOffset = 10
+		Invisibility.undergroundDepthOffset = 20
+		Invisibility.character = GetCharacter()
+		Invisibility.humanoidRootPart = Invisibility.character:WaitForChild("HumanoidRootPart")
+		Invisibility.head = Invisibility.character:WaitForChild("Head")
+		Invisibility.camera = Workspace.CurrentCamera
+		if enabled then
+			Invisibility.originalPosition = Invisibility.humanoidRootPart.Position
+			Invisibility.originalCameraCFrame = Invisibility.camera.CFrame
+			Invisibility.humanoidRootPartTransparency = Invisibility.humanoidRootPart.Transparency
+			if Invisibility.humanoidRootPart then
+				Invisibility.humanoidRootPart.Transparency = 1
+			end
+			if Invisibility.noclipConnection then
+				Invisibility.noclipConnection:Disconnect()
+			end
+			Invisibility.noclipConnection = service.RunService.Stepped:Connect(function()
+				for _, part in pairs(Invisibility.character:GetChildren()) do
+					if part:IsA("BasePart") then
+						part.CanCollide = false
+					end
+				end
+			end)
+			local characterHeight = Invisibility.originalPosition.Y
+			local cameraTargetHeight = characterHeight + Invisibility.cameraOffset
+			local undergroundDepth = cameraTargetHeight - Invisibility.undergroundDepthOffset
+			local undergroundPos = Vector3.new(Invisibility.originalPosition.X, undergroundDepth, Invisibility.originalPosition.Z)
+			Invisibility.humanoidRootPart.CFrame = CFrame.new(undergroundPos)
+			local currentCameraCF = Invisibility.camera.CFrame
+			local cameraPos = Vector3.new(undergroundPos.X, cameraTargetHeight, undergroundPos.Z)
+			Invisibility.camera.CFrame = CFrame.new(cameraPos, cameraPos + currentCameraCF.LookVector)
+		else
+			if Invisibility.noclipConnection then
+				Invisibility.noclipConnection:Disconnect()
+				Invisibility.noclipConnection = nil
+			end
+			if Invisibility.originalPosition then
+				local surfacePos = Vector3.new(Invisibility.humanoidRootPart.Position.X, Invisibility.originalPosition.Y, Invisibility.humanoidRootPart.Position.Z)
+				Invisibility.humanoidRootPart.CFrame = CFrame.new(surfacePos)
+			end
+			if Invisibility.humanoidRootPart then
+				Invisibility.humanoidRootPart.Transparency = Invisibility.humanoidRootPartTransparency or 0
+			end
+		end
+	end
+})
+
+LeftGroupBox:AddToggle("Antiragd", {
+    Text = "アンチラグドール",
+    Default = false,
+    Callback = function(Value)
+        Config.AntiragdollToggle = Value
+        if not Config.connections then Config.connections = {} end
+        if Config.AntiragdollToggle then
+            Config.onCharacter = function(char)
+                local humanoid = char:WaitForChild("Humanoid", 5)
+                if humanoid and Config.AntiragdollToggle then
+                    humanoid.BreakJointsOnDeath = false
+                    humanoid.AutoRotate = true
+                    humanoid.PlatformStand = false
+                    table.insert(Config.connections, humanoid.HealthChanged:Connect(function(health)
+                        if Config.AntiragdollToggle and health <= 0 then
+                            humanoid.Health = 1
+                        end
+                    end))
+                    table.insert(Config.connections, humanoid:GetPropertyChangedSignal("AutoRotate"):Connect(function()
+                        if Config.AntiragdollToggle and humanoid.AutoRotate == false then
+                            humanoid.AutoRotate = true
+                        end
+                    end))
+                    table.insert(Config.connections, humanoid:GetPropertyChangedSignal("PlatformStand"):Connect(function()
+                        if Config.AntiragdollToggle and humanoid.PlatformStand == true then
+                            humanoid.PlatformStand = false
+                        end
+                    end))
+                    table.insert(Config.connections, service.RunService.RenderStepped:Connect(function()
+                        if Config.AntiragdollToggle then
+                            if humanoid.Sit and humanoid.SeatPart == nil then
+                                humanoid.Sit = false
+                            end
+                        end
+                    end))
+                end
+            end
+            if localPlayer.Character then
+                Config.onCharacter(localPlayer.Character)
+            end
+            Config.charAddedConn = localPlayer.CharacterAdded:Connect(Config.onCharacter)
+        else
+            for _, conn in ipairs(Config.connections) do
+                if conn then conn:Disconnect() end
+            end
+            Config.connections = {}
+            if Config.charAddedConn then
+                Config.charAddedConn:Disconnect()
+                Config.charAddedConn = nil
+            end
+        end
+    end
+})
+
+LeftGroupBox:AddToggle("antiragdoll", {
+    Text = "アンチラグドール(ブロブ)",
+    Default = false,
+    Callback = function(Value)
+        Config.AntiRagBlob = Value
+        Config.BlobRagdollSit = false
+        if Config.Contuuti["ARChar"] then Config.Contuuti["ARChar"]:Disconnect() end
+        if Config.Contuuti["ARSeat"] then Config.Contuuti["ARSeat"]:Disconnect() end
+        if Config.AntiRagBlob then
+            if localPlayer.Character then
+                local char = localPlayer.Character
+                if char and Config.AntiRagBlob then
+                    local hum = char:WaitForChild("Humanoid", 5)
+                    local HRP = char:WaitForChild("HumanoidRootPart", 5)
+                    if hum and HRP then
+                        if Config.Contuuti["ARSeat"] then Config.Contuuti["ARSeat"]:Disconnect() end
+                        Config.Contuuti["ARSeat"] = hum:GetPropertyChangedSignal("SeatPart"):Connect(function()
+                            if hum.SeatPart and hum.SeatPart.Parent and hum.SeatPart.Parent.Name == "CreatureBlobman" and not Config.BlobRagdollSit then
+                                Config.BlobRagdollSit = true
+                                local Seat = hum.SeatPart
+                                while not hum.Sit do task.wait() end
+                                RagdollRemote:FireServer(HRP, 3)
+                                local ragdolledVal = hum:FindFirstChild("Ragdolled")
+                                while ragdolledVal and not ragdolledVal.Value and not hum.Sit do task.wait() end
+                                task.wait(0.4)
+                                hum.Sit = false
+                                Seat:Sit(hum)
+                                task.delay(0.25, function()
+                                    while hum and hum.SeatPart do
+                                        RagdollRemote:FireServer(HRP, 1)
+                                        task.wait(0.05)
+                                    end
+                                    Config.BlobRagdollSit = false
+                                end)
+                            end
+                        end)
+                    end
+                end
+            end
+            Config.Contuuti["ARChar"] = localPlayer.CharacterAdded:Connect(function(char)
+                if not char or not Config.AntiRagBlob then return end
+                local hum = char:WaitForChild("Humanoid", 5)
+                local HRP = char:WaitForChild("HumanoidRootPart", 5)
+                if not (hum and HRP) then return end
+                if Config.Contuuti["ARSeat"] then Config.Contuuti["ARSeat"]:Disconnect() end
+                Config.Contuuti["ARSeat"] = hum:GetPropertyChangedSignal("SeatPart"):Connect(function()
+                    if hum.SeatPart and hum.SeatPart.Parent and hum.SeatPart.Parent.Name == "CreatureBlobman" and not Config.BlobRagdollSit then
+                        Config.BlobRagdollSit = true
+                        local Seat = hum.SeatPart
+                        while not hum.Sit do task.wait() end
+                        RagdollRemote:FireServer(HRP, 3)
+                        local ragdolledVal = hum:FindFirstChild("Ragdolled")
+                        while ragdolledVal and not ragdolledVal.Value and not hum.Sit do task.wait() end
+                        task.wait(0.4)
+                        hum.Sit = false
+                        Seat:Sit(hum)
+                        task.delay(0.25, function()
+                            while hum and hum.SeatPart do
+                                RagdollRemote:FireServer(HRP, 1)
+                                task.wait(0.05)
+                            end
+                            Config.BlobRagdollSit = false
+                        end)
+                    end
+                end)
+            end)
+        end
+    end
+})
+
+LeftGroupBox:AddToggle("AntiSit", {
+    Text = "アンチ座り",
+    Default = false,
+    Callback = function(Value)
+        Config.antibananaSit = Value
+        if Value then
+            task.spawn(function()
+                while Config.antibananaSit do
+                    local character = localPlayer.Character
+                    local hum = character and character:FindFirstChildOfClass("Humanoid")
+                    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+                    local camera = workspace.CurrentCamera
+                    if hum and hrp and hum.Health > 0 then
+                        hum.Sit = false
+                        hum:ChangeState(Enum.HumanoidStateType.Running)
+                        local vec = camera.CFrame.LookVector
+                        hrp.CFrame = CFrame.new(
+                            hrp.Position,
+                            hrp.Position + Vector3.new(vec.X, 0, vec.Z)
+                        )
+                    end
+                    task.wait()
+                end
+            end)
+        end
+    end
+})
