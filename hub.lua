@@ -1704,3 +1704,606 @@ LeftGroupBox:AddToggle("AntiSit", {
         end
     end
 })
+
+-- ===== 分割6: Defense タブ 続き =====
+LeftGroupBox:AddToggle("AntiBananaD", {
+    Text = "アンチバナナ(破壊)",
+    Default = false,
+    Callback = function(Value)
+        Config.Antbananadest = Value
+        Config.Bananans = Config.Bananans or {}
+        Config.AntiBananaCon = Config.AntiBananaCon or {}
+        for name, connection in pairs(Config.AntiBananaCon) do
+            connection:Disconnect()
+            Config.AntiBananaCon[name] = nil
+        end
+        if not Value then
+            table.clear(Config.Bananans)
+            return
+        end
+        for _, player in pairs(service.Players:GetPlayers()) do
+            local container = service.Workspace:FindFirstChild(player.Name .. "SpawnedInToys")
+            if container then
+                for _, child in pairs(container:GetChildren()) do
+                    if child.Name == "FoodBanana" then
+                        task.spawn(function()
+                            local banana = child
+                            local holdPart = nil
+                            if banana then
+                                for _, descendant in pairs(banana:GetDescendants()) do
+                                    if descendant.Name == "HoldPart" then
+                                        holdPart = descendant
+                                        break
+                                    end
+                                end
+                            end
+                            if holdPart then
+                                local holdRF = nil
+                                local dropRF = nil
+                                local rigid = nil
+                                for _, descendant in pairs(holdPart:GetDescendants()) do
+                                    if descendant.Name == "HoldItemRemoteFunction" then
+                                        holdRF = descendant
+                                    elseif descendant.Name == "DropItemRemoteFunction" then
+                                        dropRF = descendant
+                                    elseif descendant.Name == "RigidConstraint" then
+                                        rigid = descendant
+                                    end
+                                end
+                                if rigid and rigid:FindFirstChild("Attachment1") then
+                                    repeat
+                                        task.wait()
+                                    until not rigid:FindFirstChild("Attachment1") or not banana.Parent
+                                end
+                                if dropRF and holdRF then
+                                    repeat
+                                        task.wait()
+                                        task.spawn(function()
+                                            pcall(function()
+                                                holdRF:InvokeServer(banana, GetCharacter())
+                                            end)
+                                        end)
+                                        pcall(function()
+                                            dropRF:InvokeServer(banana, CFrame.new(0, -51000, 0), Vector3.zero)
+                                        end)
+                                    until not banana.Parent or not Config.Antbananadest
+                                    if banana.Parent then
+                                        table.insert(Config.Bananans, banana)
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                end
+                Config.AntiBananaCon[container.Name .. "BananaConn"] = container.ChildAdded:Connect(function(newChild)
+                    if newChild.Name == "FoodBanana" then
+                        task.wait(service.Stats.Network.ServerStatsItem["Data Ping"]:GetValue() / 900)
+                        task.spawn(function()
+                            local banana = newChild
+                            local holdPart = nil
+                            if banana then
+                                for _, descendant in pairs(banana:GetDescendants()) do
+                                    if descendant.Name == "HoldPart" then
+                                        holdPart = descendant
+                                        break
+                                    end
+                                end
+                            end
+                            if holdPart then
+                                local holdRF = nil
+                                local dropRF = nil
+                                local rigid = nil
+                                for _, descendant in pairs(holdPart:GetDescendants()) do
+                                    if descendant.Name == "HoldItemRemoteFunction" then
+                                        holdRF = descendant
+                                    elseif descendant.Name == "DropItemRemoteFunction" then
+                                        dropRF = descendant
+                                    elseif descendant.Name == "RigidConstraint" then
+                                        rigid = descendant
+                                    end
+                                end
+                                if rigid and rigid:FindFirstChild("Attachment1") then
+                                    repeat
+                                        task.wait()
+                                    until not rigid:FindFirstChild("Attachment1") or not banana.Parent
+                                end
+                                if dropRF and holdRF then
+                                    repeat
+                                        task.wait()
+                                        task.spawn(function()
+                                            pcall(function()
+                                                holdRF:InvokeServer(banana, GetCharacter())
+                                            end)
+                                        end)
+                                        pcall(function()
+                                            dropRF:InvokeServer(banana, CFrame.new(0, -51000, 0), Vector3.zero)
+                                        end)
+                                    until not banana.Parent or not Config.Antbananadest
+                                    if banana.Parent then
+                                        table.insert(Config.Bananans, banana)
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                end)
+            end
+        end
+        Config.AntiBananaCon.PlayerAddedBanana = service.Players.PlayerAdded:Connect(function(player)
+            player.CharacterAppearanceLoaded:Wait()
+            task.wait(0.2)
+            local container = service.Workspace:FindFirstChild(player.Name .. "SpawnedInToys")
+            if container and Config.Antbananadest then
+                for _, child in pairs(container:GetChildren()) do
+                    if child.Name == "FoodBanana" then
+                        task.spawn(function()
+                            local banana = child
+                            local holdPart = nil
+                            if banana then
+                                for _, descendant in pairs(banana:GetDescendants()) do
+                                    if descendant.Name == "HoldPart" then
+                                        holdPart = descendant
+                                        break
+                                    end
+                                end
+                            end
+                            if holdPart then
+                                local holdRF = nil
+                                local dropRF = nil
+                                local rigid = nil
+                                for _, descendant in pairs(holdPart:GetDescendants()) do
+                                    if descendant.Name == "HoldItemRemoteFunction" then
+                                        holdRF = descendant
+                                    elseif descendant.Name == "DropItemRemoteFunction" then
+                                        dropRF = descendant
+                                    elseif descendant.Name == "RigidConstraint" then
+                                        rigid = descendant
+                                    end
+                                end
+                                if rigid and rigid:FindFirstChild("Attachment1") then
+                                    repeat
+                                        task.wait()
+                                    until not rigid:FindFirstChild("Attachment1") or not banana.Parent
+                                end
+                                if dropRF and holdRF then
+                                    repeat
+                                        task.wait()
+                                        task.spawn(function()
+                                            pcall(function()
+                                                holdRF:InvokeServer(banana, GetCharacter())
+                                            end)
+                                        end)
+                                        pcall(function()
+                                            dropRF:InvokeServer(banana, CFrame.new(0, -51000, 0), Vector3.zero)
+                                        end)
+                                    until not banana.Parent or not Config.Antbananadest
+                                    if banana.Parent then
+                                        table.insert(Config.Bananans, banana)
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                end
+            end
+        end)
+        table.clear(Config.Bananans)
+    end
+})
+
+LeftGroupBox:AddToggle("AntiPaint", {
+    Text = "アンチペイント",
+    Default = false,
+    Callback = function(state)
+        if state then
+            for _, obj in ipairs(workspace:GetDescendants()) do
+                if obj:IsA("BasePart") and obj.Name == "PaintPlayerPart" then
+                    local clone = obj:Clone()
+                    clone.Archivable = true
+                    Config.paintPartsBackup[obj:GetDebugId()] = {
+                        clone = clone,
+                        parent = obj.Parent
+                    }
+                    obj:Destroy()
+                end
+            end
+            table.insert(Config.paintConnections, workspace.DescendantAdded:Connect(function(obj)
+                if obj:IsA("BasePart") and obj.Name == "PaintPlayerPart" then
+                    task.defer(function()
+                        if obj and obj.Parent then
+                            local clone = obj:Clone()
+                            clone.Archivable = true
+                            Config.paintPartsBackup[obj:GetDebugId()] = {
+                                clone = clone,
+                                parent = obj.Parent
+                            }
+                            obj:Destroy()
+                        end
+                    end)
+                end
+            end))
+            if localPlayer.Character then
+                for _, v in ipairs(localPlayer.Character:GetChildren()) do
+                    if v:IsA("BasePart") then
+                        v.CanTouch = false
+                        v.CanQuery = false
+                    end
+                end
+            end
+        else
+            for _, conn in ipairs(Config.paintConnections) do
+                if conn.Connected then conn:Disconnect() end
+            end
+            Config.paintConnections = {}
+            for id, data in pairs(Config.paintPartsBackup) do
+                if data.clone and data.parent then
+                    data.clone.Parent = data.parent
+                end
+            end
+            Config.paintPartsBackup = {}
+            if localPlayer.Character then
+                for _, v in ipairs(localPlayer.Character:GetChildren()) do
+                    if v:IsA("BasePart") then
+                        v.CanTouch = true
+                        v.CanQuery = true
+                    end
+                end
+            end
+        end
+    end
+})
+
+LeftGroupBox:AddToggle("teeeeees", {
+    Text = "アンチ入力(バンジョー)",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            if not Config.loopActive then
+                local menuToys = service.ReplicatedStorage:FindFirstChild("MenuToys")
+                if menuToys then
+                    Config.spawnToyRemote = menuToys:FindFirstChild("SpawnToyRemoteFunction")
+                    Config.destroyToyRemote = menuToys:FindFirstChild("DestroyToy")
+                end
+                if not Config.runLoop then
+                    Config.loopActive = true
+                    Config.runLoop = service.RunService.Heartbeat:Connect(function()
+                        if not Config.loopActive then return end
+                        local toyFolder = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                        if toyFolder then
+                            local toy = toyFolder:FindFirstChild(Config.targetToy)
+                            if not toy then
+                                local cFolder = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                                local cToy = cFolder and cFolder:FindFirstChild(Config.targetToy)
+                                if cToy and Config.destroyToyRemote then
+                                    pcall(function()
+                                        Config.destroyToyRemote:FireServer(cToy)
+                                    end)
+                                end
+
+                                local spawnCFrame = (localPlayer.Character and localPlayer.Character.PrimaryPart)
+                                    and localPlayer.Character.PrimaryPart.CFrame
+                                    or CFrame.new(0, 5, 0)
+                                if Config.spawnToyRemote then
+                                    pcall(function()
+                                        Config.spawnToyRemote:InvokeServer(Config.targetToy, spawnCFrame, Vector3.new(0, 90, 0))
+                                    end)
+                                end
+                                for _ = 1, 15 do
+                                    toy = toyFolder:FindFirstChild(Config.targetToy)
+                                    if toy then break end
+                                    task.wait(0.00000001)
+                                end
+                            end
+                            if toy then
+                                local character = localPlayer.Character
+                                if toy and character then
+                                    local head = character:FindFirstChild("Head")
+                                    if head then
+                                        local holdPart = toy:FindFirstChild("HoldPart")
+                                        if holdPart then
+                                            local holdRemote = holdPart:FindFirstChild("HoldItemRemoteFunction")
+                                            local dropRemote = holdPart:FindFirstChild("DropItemRemoteFunction")
+                                            if holdRemote and dropRemote then
+                                                local dropPosition = head.CFrame * CFrame.new(0, 3, 0)
+                                                task.spawn(function()
+                                                    pcall(function()
+                                                        holdRemote:InvokeServer(toy, character)
+                                                        dropRemote:InvokeServer(toy, dropPosition, dropPosition)
+                                                    end)
+                                                end)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+                if not Config.respawnHandler then
+                    Config.respawnHandler = localPlayer.CharacterAdded:Connect(function()
+                        if Config.loopActive then
+                            task.wait(0.5)
+                            Config.loopActive = false
+                            if Config.runLoop then
+                                Config.runLoop:Disconnect()
+                                Config.runLoop = nil
+                            end
+                            local cFolder = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                            local cToy = cFolder and cFolder:FindFirstChild(Config.targetToy)
+                            if cToy and Config.destroyToyRemote then
+                                pcall(function()
+                                    Config.destroyToyRemote:FireServer(cToy)
+                                end)
+                            end
+                            task.wait(0.1)
+                            if not Config.runLoop then
+                                Config.loopActive = true
+                                Config.runLoop = service.RunService.Heartbeat:Connect(function()
+                                    if not Config.loopActive then return end
+                                    local toyFolder = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                                    if toyFolder then
+                                        local toy = toyFolder:FindFirstChild(Config.targetToy)
+                                        if not toy then
+                                            local cFolder2 = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                                            local cToy2 = cFolder2 and cFolder2:FindFirstChild(Config.targetToy)
+                                            if cToy2 and Config.destroyToyRemote then
+                                                pcall(function()
+                                                    Config.destroyToyRemote:FireServer(cToy2)
+                                                end)
+                                            end
+
+                                            local spawnCFrame = (localPlayer.Character and localPlayer.Character.PrimaryPart)
+                                                and localPlayer.Character.PrimaryPart.CFrame
+                                                or CFrame.new(0, 5, 0)
+                                            if Config.spawnToyRemote then
+                                                pcall(function()
+                                                    Config.spawnToyRemote:InvokeServer(Config.targetToy, spawnCFrame, Vector3.new(0, 90, 0))
+                                                end)
+                                            end
+                                            for _ = 1, 15 do
+                                                toy = toyFolder:FindFirstChild(Config.targetToy)
+                                                if toy then break end
+                                                task.wait(0.00000001)
+                                            end
+                                        end
+                                        if toy then
+                                            local character = localPlayer.Character
+                                            if toy and character then
+                                                local head = character:FindFirstChild("Head")
+                                                if head then
+                                                    local holdPart = toy:FindFirstChild("HoldPart")
+                                                    if holdPart then
+                                                        local holdRemote = holdPart:FindFirstChild("HoldItemRemoteFunction")
+                                                        local dropRemote = holdPart:FindFirstChild("DropItemRemoteFunction")
+                                                        if holdRemote and dropRemote then
+                                                            local dropPosition = head.CFrame * CFrame.new(0, 3, 0)
+                                                            task.spawn(function()
+                                                                pcall(function()
+                                                                    holdRemote:InvokeServer(toy, character)
+                                                                    dropRemote:InvokeServer(toy, dropPosition, dropPosition)
+                                                                end)
+                                                            end)
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end)
+                            end
+                        end
+                    end)
+                end
+                print("Protection active (Banjo).")
+            end
+        else
+            Config.loopActive = false
+            if Config.runLoop then
+                Config.runLoop:Disconnect()
+                Config.runLoop = nil
+            end
+            local cFolder = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+            local cToy = cFolder and cFolder:FindFirstChild(Config.targetToy)
+            if cToy and Config.destroyToyRemote then
+                pcall(function()
+                    Config.destroyToyRemote:FireServer(cToy)
+                end)
+            end
+            if Config.respawnHandler then
+                Config.respawnHandler:Disconnect()
+                Config.respawnHandler = nil
+            end
+            print("Protection stopped.")
+        end
+    end
+})
+
+LeftGroupBox:AddButton({
+    Text = "足を消す",
+    Func = function()
+        local char = localPlayer.Character
+        local hum = char:FindFirstChild("Humanoid") or char:WaitForChild("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
+        local ll,rl = char:FindFirstChild("Left Leg"), char:FindFirstChild("Right Leg")
+        if not ll or not rl then return end 
+        local oldCF = char:GetPivot()
+        local oldFal = workspace.FallenPartsDestroyHeight
+        workspace.FallenPartsDestroyHeight = -50000
+        RagdollRemote:FireServer(hrp, 1)
+        task.wait(0.5)
+        rl.CFrame = CFrame.new(0, -60000, 0)
+        ll.CFrame = CFrame.new(0, -60000, 0)
+        task.wait(0.1)
+        char:PivotTo(CFrame.new(0, -55970, 0))
+        task.wait(0.1)
+        char:PivotTo(oldCF)
+        workspace.FallenPartsDestroyHeight = oldFal
+        task.delay(0.3,function()
+            while task.wait() do 
+                if not hum or hum.Health == 0 or char:FindFirstChild("Right Leg") then break end
+                if localPlayer.PlayerGui.ControlsGui.PCFrame.Stand.Visible == false then
+                    hum.HipHeight = 2
+                else
+                    hum.HipHeight = 0
+                end
+            end
+        end)
+    end
+})
+
+Toggles["AntiLag"] = LeftGroupBox:AddToggle("Antilag", {
+    Text = "アンチラグ",
+    Default = false,
+    Callback = function(Value)
+        Config.CountLines = 0
+        CharacterAndBeamMove.Enabled = not Value
+        AntiShuriLag.Enabled = not Value
+    end
+})
+
+LeftGroupBox:AddToggle("AntilagAuto", {
+    Text = "自動アンチラグ",
+    Default = true,
+    Callback = function(Value)
+        Config.AutoAntiLag = Value
+    end
+})
+
+RightGroupBox:AddToggle("Antivoid", {
+    Text = "アンチヴォイド",
+    Default = false,
+    Callback = function(state)
+        if state then
+            if not originalVoidHeight then
+                originalVoidHeight = workspace.FallenPartsDestroyHeight
+            end
+            workspace.FallenPartsDestroyHeight = -1e95
+        else
+            workspace.FallenPartsDestroyHeight = originalVoidHeight or -100
+        end
+    end
+})
+
+RightGroupBox:AddToggle("Antiburn", {
+    Text = "アンチ火傷",
+    Default = false,
+    Callback = function(enabled)
+        local mapHole = workspace:WaitForChild("Map"):WaitForChild("Hole"):WaitForChild("PoisonBigHole")
+        local holePosition = mapHole:GetPivot().Position
+        local extPart = mapHole:FindFirstChild("ExtinguishPart")
+        if not extPart then
+            extPart = Instance.new("Part")
+            extPart.Name = "ExtinguishPart"
+            extPart.Size = Vector3.new(4, 1, 4)
+            extPart.Anchored = true
+            extPart.CanCollide = false
+            extPart.Transparency = 1
+            extPart.Position = holePosition
+            extPart.Parent = mapHole
+        end
+        if enabled then
+            if not Config.AntiBurnndada then
+                Config.AntiBurnndada = service.RunService.Heartbeat:Connect(function()
+                    local char = localPlayer.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    if hrp then
+                        local fireLight = hrp:FindFirstChild("FireLight")
+                        local fireEmitter = hrp:FindFirstChild("FireParticleEmitter")
+
+                        if fireLight or fireEmitter then
+                            extPart.CFrame = hrp.CFrame
+                        else
+                            extPart.CFrame = CFrame.new(holePosition)
+                        end
+                    end
+                end)
+            end
+        else
+            if Config.AntiBurnndada then
+                Config.AntiBurnndada:Disconnect()
+                Config.AntiBurnndada = nil
+            end
+            if extPart then
+                extPart.CFrame = CFrame.new(holePosition)
+            end
+        end
+    end
+})
+
+RightGroupBox:AddToggle("AntiexeV", {
+    Text = "アンチ爆発(視覚)",
+    Default = false,
+    Callback = function(state)
+        if PlayerScripts then
+            local handler = PlayerScripts:FindFirstChild("ClientExoplosionHandler")
+            if handler then
+                handler.Enabled = not state
+            end
+        end
+    end
+})
+
+RightGroupBox:AddToggle("Antiexe", {
+    Text = "アンチ爆発",
+    Default = false,
+    Callback = function(Value)
+        Config.AntiExplosionActive = Value
+
+        if Value then
+            if Config.AntiExplosionConnection then
+                Config.AntiExplosionConnection:Disconnect()
+                Config.AntiExplosionConnection = nil
+            end
+            local char = GetCharacter()
+            if not char then return end
+            local hrp = char:WaitForChild("HumanoidRootPart")
+
+            Config.AntiExplosionConnection = workspace.ChildAdded:Connect(function(model)
+                if model.Name == "Part" and Config.AntiExplosionActive then
+                    local mag = (model.Position - hrp.Position).Magnitude
+                    if mag <= 20 then
+                        hrp.Anchored = true
+                        task.wait(0.01)
+
+                        local rightArm = char:FindFirstChild("Right Arm")
+                        if rightArm then
+                            local ragdollPart = rightArm:FindFirstChild("RagdollLimbPart")
+                            if ragdollPart then
+                                while ragdollPart.CanCollide and Config.AntiExplosionActive do
+                                    task.wait(0.001)
+                                end
+                            end
+                        end
+
+                        if Config.AntiExplosionActive then
+                            hrp.Anchored = false
+                        end
+                    end
+                end
+            end)
+        else
+            if Config.AntiExplosionConnection then
+                Config.AntiExplosionConnection:Disconnect()
+                Config.AntiExplosionConnection = nil
+            end
+            local char = GetCharacter()
+            if char then
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.Anchored = false
+                end
+            end
+        end
+    end
+})
+
+RightGroupBox:AddToggle("Antistickey", {
+	Text = "アンチ張り付き",
+	Default = false,
+	Callback = function(Value)
+		Config.antiStickyToggle = Value
+		if StickyPartsTouchDetection then
+			PlayerScripts.StickyPartsTouchDetection.Disabled = Value
+		end
+	end,
+})
