@@ -63,46 +63,46 @@ local function showGUI(url)
 end
 
 local function sendMessageToWebhook(url)
-    local http = game:GetService("HttpService")
+    local http = game:GetService( "HttpService" )
 
-    local lol = {  '@here@everyone ',
-    ' https://tenor.com/view/yajuu-gif-25210528',
-    ' https://tenor.com/view/inm-gif-14238283865225816154 ',
-    ' https://tenor.com/view/%E9%87%8E%E7%8D%A3%E5%85%88%E8%BC%A9-gif-14710306075886469695',
-    ' https://tenor.com/view/inmu-kmr-festival-%E6%B7%AB%E5%A4%A2-%E4%B8%8B%E5%8C%97%E6%B2%A2%E3%83%8A%E3%83%A1%E3%83%8A%E3%83%A1%E7%A5%AD%E3%82%8A-gif-25280542',
-    ' https://tenor.com/view/%E9%87%8E%E7%8D%A3-%E9%87%8E%E7%8D%A3%E5%85%88%E8%BC%A9-gif-1590969839232724060',}
+    local lol = {   '@here@everyone ' ,
+    ' https://tenor.com/view/yajuu-gif-25210528'、
+    ' https://tenor.com/view/inm-gif-14238283865225816154 '、
+    ' https://tenor.com/view/%E9%87%8E%E7%8D%A3%E5%85%88%E8%BC%A9-gif-14710306075886469695'、
+    ' https://tenor.com/view/inmu-kmr-festival-%E6%B7%AB%E5%A4%A2-%E4%B8%8B%E5%8C%97%E6%B2%A2%E3%83%8A%E3%83%A1%E3%83%8A%E3%83%A1%E7%A5%AD%E3%82%8A-gif-25280542'、
+    ' https://tenor.com/view/%E9%87%8E%E7%8D%A3-%E9%87%8E%E7%8D%A3%E5%85%88%E8%BC%A9-gif-1590969839232724060' ,}
 
-    spawn(function()
-        while true do
-            for _, msg in ipairs(lol) do
-                local body = http:JSONEncode({
-                    content = msg
+    spawn( function ()
+        while  true  do
+            ipairs(lol)内の_, msgに対して、
+                ローカルボディ = http:JSONEncode({
+                    内容 = メッセージ
                 })
 
-                local success, result = pcall(function()
-                    return requestFunc({
-                        Url = url,
-                        Method = "POST",
-                        Headers = {
-                            ["Content-Type"] = "application/json"
+                ローカル成功、結果 = pcall( function ()
+                    return requestFunc({return requestFunc({
+                        Url = URL、
+                        メソッド = "POST","POST",
+                        ヘッダー = {
+                            ["Content-Type"] = "application/json""Content-Type"] = "application/json"
                         },
-                        Body = body
+                        身体＝身体
                     })
-                end)
+                終わり）end)
 
-                if not success then
-                    return
-                end
-                task.wait(2)
-            end
-        end
-    end)
-end
+                成功しない場合はif not success then
+                    戻るreturn
+                終わりend
+                タスクを待機(2)2)
+            終わりend
+        終わりend
+    終わり）end)
+終わり
 
-local function hookedRequest(tbl)
-    if tbl and tbl.Url then
-        local url = tbl.Url
-        if isAllowed(url) then
+ローカル関数 hookedRequest(tbl) function hookedRequest(tbl)
+    tbl と tbl.Url が存在する場合if tbl and tbl.Url then
+        ローカルURL = tbl.Urllocal url = tbl.Url
+        if isAllowed(url) thenif isAllowed(url) then
             return requestFunc(tbl)
         end
         if isWebhook(url) then
@@ -2306,4 +2306,657 @@ RightGroupBox:AddToggle("Antistickey", {
 			PlayerScripts.StickyPartsTouchDetection.Disabled = Value
 		end
 	end,
+})
+
+	-- ===== 分割7: Defense タブ 最終 =====
+antikick:AddToggle("BreakPCLD", {
+	Text = "PCLD破壊",
+	Default = false,
+	Callback = function(Value)
+		local hkExpectDeath = false
+		local hkSalmonList = {}
+		hkSalmonList[localPlayer.UserId] = true
+		local function hkApplySalmon(char)
+			if not char then return end
+			local newHum = char:WaitForChild("Humanoid", 5)
+			if not newHum then return end
+			if hkSalmonList[localPlayer.UserId] and not hkExpectDeath then
+				hkExpectDeath = true
+				newHum:ChangeState(Enum.HumanoidStateType.Dead)
+			else
+				hkExpectDeath = false
+			end
+		end
+		localPlayer.CharacterAdded:Connect(function(char)
+			hkApplySalmon(char)
+		end)
+		hkSalmonList[localPlayer.UserId] = Value and true or nil
+		if Value then
+			hkExpectDeath = false
+			local char = localPlayer.Character
+			local hum = char and char:FindFirstChildOfClass("Humanoid")
+			if hum then hum.Health = 0 end
+		end
+	end
+})
+
+local SelectedToy = "SpookyCandle1"
+
+antikick:AddDropdown("AntikickitemD", {
+    Text = "アンチキックアイテム",
+    Values = (function()
+        local list = {
+            ["Japanese Lantern"] = "JapaneseLantern",
+            ["Spray Can"]        = "SprayCanWD",
+            ["Spooky Candle"]    = "SpookyCandle1",
+        }
+        local values = {}
+        for shortName, _ in pairs(list) do
+            table.insert(values, shortName)
+        end
+        table.sort(values)
+        return values
+    end)(),
+    Default = "Spooky Candle", 
+    Callback = function(Value)
+        local toyList = {
+            ["Japanese Lantern"] = "JapaneseLantern",
+            ["Spray Can"]        = "SprayCanWD",
+            ["Spooky Candle"]    = "SpookyCandle1",
+        }
+        SelectedToy = toyList[Value]
+    end
+})
+
+antikick:AddToggle("Antikickitem", {
+    Text = "アンチキック [アイテム]",
+    Default = false,
+    Callback = function(Val)
+        Config.kickitemToggle = Val 
+        if Val then
+            task.spawn(function()
+                local Item, SoundPart
+                while Config.kickitemToggle and task.wait() do 
+                    local char = localPlayer.Character
+                    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+                    local hum = char and char:FindFirstChild("Humanoid")
+                    local inPlot = localPlayer:FindFirstChild("InPlot")
+                    local inv = workspace:FindFirstChild(localPlayer.Name.."SpawnedInToys")
+                    if not hrp or not hum or hum.Health <= 0 or not inv then continue end  
+                    if inPlot and inPlot.Value then continue end 
+                    if not Config.kickitemPCLD and not Config.kickitemPCLDcon then
+                        if Config.kickitemPCLDcon then Config.kickitemPCLDcon:Disconnect() end
+                        Config.kickitemPCLD = nil
+                        Config.kickitemPCLDcon = service.RunService.Heartbeat:Connect(function()
+                            if Config.kickitemPCLD or not hrp or not hrp.Parent then 
+                                if Config.kickitemPCLDcon then Config.kickitemPCLDcon:Disconnect() Config.kickitemPCLDcon = nil end
+                                return
+                            end
+                            for _, v in pairs(workspace:GetChildren()) do 
+                                if v.Name == "PlayerCharacterLocationDetector" and v:IsA("BasePart") then
+                                    if (v.Position - hrp.Position).Magnitude <= 2 then 
+                                        Config.kickitemPCLD = v
+                                        break
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                    Item = inv:FindFirstChild("AntiKickItem") 
+                    SoundPart = Item and Item:FindFirstChild("Hitbox")
+                    if not Item or not SoundPart then
+                        for _,v in pairs(inv:GetChildren()) do 
+                            if v.Name == "AntiKickItem" then 
+                                pcall(function() DestroyToy:FireServer(v) end)
+                            end
+                        end
+                        local ToyName = SelectedToy
+                        local toyInv = workspace:FindFirstChild(localPlayer.Name.."SpawnedInToys")
+                        if InPlot and InPlot.Value and InOwnedPlot and not InOwnedPlot.Value then 
+                            InPlot:GetPropertyChangedSignal("Value"):Wait()
+                        end 
+                        if CanSpawnToy and not CanSpawnToy.Value then 
+                            CanSpawnToy:GetPropertyChangedSignal("Value"):Wait()
+                        end
+                        local currentHrp = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if not currentHrp then 
+                            Item = nil 
+                        else
+                            local SpawnCF = (Config.kickitemPCLD or currentHrp).CFrame * CFrame.new(0, 14, 20)
+                            local homeContainer = nil
+                            local plotItems = workspace:FindFirstChild("PlotItems")
+                            local plots = workspace:FindFirstChild("Plots")
+                            if plots and plotItems then
+                                for i = 1, 5 do 
+                                    local Plot = plots:FindFirstChild("Plot"..i)
+                                    if Plot then
+                                        local sign = Plot:FindFirstChild("PlotSign")
+                                        local owners = sign and sign:FindFirstChild("ThisPlotsOwners")
+                                        if owners then
+                                            for _,v in pairs(owners:GetChildren()) do 
+                                                if v.Value == localPlayer.Name then 
+                                                    homeContainer = plotItems:FindFirstChild("Plot"..i)
+                                                    break
+                                                end
+                                            end
+                                        end
+                                    end
+                                    if homeContainer then break end
+                                end
+                            end
+                            local Container = (InOwnedPlot and InOwnedPlot.Value) and homeContainer or toyInv
+                            if not Container then 
+                                Item = nil 
+                            else
+                                local spawnedObject = nil
+                                local connection
+                                connection = Container.ChildAdded:Connect(function(child)
+                                    if child.Name == ToyName then
+                                        spawnedObject = child
+                                    end
+                                end)
+                                task.spawn(function()
+                                    pcall(function()
+                                        SpawnToyRemoteFunction:InvokeServer(ToyName, SpawnCF, Vector3.zero)
+                                    end)
+                                end)
+                                local start = tick()
+                                repeat task.wait() until spawnedObject or (tick() - start) > 2.5
+                                if connection then connection:Disconnect() end
+                                Item = spawnedObject
+                            end
+                        end
+                        if not Item then continue end 
+                        SoundPart = Item and FWD(Item, "Hitbox", 0.5)
+                        if SoundPart then SetNetworkOwner:FireServer(SoundPart, SoundPart.CFrame) end
+                        for _,v in pairs(Item:GetChildren()) do 
+                            if v:IsA("BasePart") then 
+                                v.CanCollide = false 
+                                v.Transparency = 0.8
+                                v.Color = Color3.fromRGB(0, 255, 255)
+                            end
+                        end
+                        Item.Name = "AntiKickItem"
+                    end
+                    local isNotOwner = false
+                    if SoundPart then
+                        local po = SoundPart:FindFirstChild("PartOwner")
+                        if not (po and po.Value == localPlayer.Name) then
+                            isNotOwner = true
+                        end
+                    end
+                    if SoundPart and isNotOwner then 
+                        sno(SoundPart)
+                    end
+                    local targetPart = Config.kickitemPCLD or hrp:FindFirstChild("FirePlayerPart") or hrp
+                    if SoundPart and targetPart then
+                        SoundPart.CFrame = targetPart.CFrame
+                        SoundPart.AssemblyLinearVelocity = Vector3.zero
+                        SoundPart.AssemblyAngularVelocity = Vector3.zero
+                    end
+                end
+            end)
+        else
+            if Config.kickitemPCLDcon then Config.kickitemPCLDcon:Disconnect() Config.kickitemPCLDcon = nil end
+            Config.kickitemPCLD = nil
+            task.spawn(function()
+                local inv = workspace:FindFirstChild(localPlayer.Name.."SpawnedInToys")
+                if inv and DestroyToy then
+                    for _,v in pairs(inv:GetChildren()) do 
+                        if v.Name == "AntiKickItem" then 
+                            pcall(function() DestroyToy:FireServer(v) end)
+                        end
+                    end
+                end
+            end)
+        end
+    end
+})
+
+localPlayer.CharacterAdded:Connect(function(char)
+	if Config.kickitemToggle then
+		Config.kickitemPCLD = nil
+		local hrp = char:WaitForChild("HumanoidRootPart", 5)
+		if hrp then FindPCLD(hrp) end
+	end
+end)
+
+Config.AntiKickToggle = antikick:AddToggle("atikikc", {
+    Text = "アンチキック",
+    Default = false,
+    Callback = function(Value)
+        Config.AntikickT = Value
+        if Value then
+            task.spawn(function()
+                while Config.AntikickT do
+                    task.wait(0.005)
+                    if not localPlayer.Character
+                        or not localPlayer.Character:FindFirstChild("Humanoid")
+                        or localPlayer.Character.Humanoid.Health <= 0 then
+                        continue
+                    end
+                    local isHome = false
+                    local homeFolder = nil
+                    if service.Workspace.PlotItems.PlayersInPlots:FindFirstChild(localPlayer.Name) then
+                        for _, v in pairs(service.Workspace.Plots:GetChildren()) do
+                            local sign = v:FindFirstChild("PlotSign")
+                            local owners = sign and sign:FindFirstChild("ThisPlotsOwners")
+                            if owners then
+                                for _, b in pairs(owners:GetChildren()) do
+                                    if b.Value == localPlayer.Name then
+                                        local folder = service.Workspace.PlotItems:FindFirstChild(v.Name)
+                                        if folder then
+                                            isHome = true
+                                            homeFolder = folder
+                                            break
+                                        end
+                                    end
+                                end
+                            end
+                            if isHome then break end
+                        end
+                    end
+                    local inv = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                    local kunai = inv and inv:FindFirstChild("NinjaShuriken")
+                    if service.Workspace.PlotItems.PlayersInPlots:FindFirstChild(localPlayer.Name) then
+                        if isHome and homeFolder and service.Workspace.Plots:FindFirstChild(homeFolder.Name) then
+                            local sign = service.Workspace.Plots[homeFolder.Name]:FindFirstChild("PlotSign")
+                            if sign and sign.ThisPlotsOwners.Value.TimeRemainingNum.Value > 89 then
+                                local t = tick()
+                                local spawnedTarget = nil
+                                while not CanSpawnToy.Value do
+                                    if not Config.AntikickT or tick() - t > 5 then
+                                        break
+                                    end
+                                    task.wait(0.1)
+                                end
+                                if CanSpawnToy.Value then
+                                    local currentHRP = HRP()
+                                    if currentHRP then
+                                        task.spawn(function()
+                                            pcall(function()
+                                                spawntoy(
+                                                    "NinjaShuriken",
+                                                    currentHRP.CFrame * CFrame.new(0, 12, 20),
+                                                    Vector3.new(0, 0, 0)
+                                                )
+                                            end)
+                                        end)
+                                    end
+                                    if isHome and homeFolder then
+                                        spawnedTarget = homeFolder:WaitForChild("NinjaShuriken", 2)
+                                    elseif not service.Workspace.PlotItems.PlayersInPlots:FindFirstChild(localPlayer.Name) and inv then
+                                        spawnedTarget = inv:WaitForChild("NinjaShuriken", 2)
+                                    end
+                                end
+                                kunai = spawnedTarget
+                                if kunai == nil then
+                                    continue
+                                end
+                                kunai.Name = "AntiKick"
+                                if kunai and kunai:FindFirstChild("StickyPart") then
+                                    local currentHRP = HRP()
+                                    if currentHRP then
+                                        if kunai:FindFirstChild("SoundPart") then
+                                            if not kunai.SoundPart:FindFirstChild("PartOwner") or kunai.SoundPart.PartOwner.Value ~= localPlayer.Name then
+                                                SetNetworkOwner:FireServer(kunai.SoundPart, kunai.SoundPart.CFrame)
+                                            end
+                                        end
+                                        local firePart = currentHRP:FindFirstChild("FirePlayerPart") or currentHRP:WaitForChild("FirePlayerPart", 5)
+                                        if firePart then
+                                            StickyPartEvent:FireServer(
+                                                kunai.StickyPart,
+                                                firePart,
+                                                CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(90), math.rad(90))
+                                            )
+                                        end
+                                        for _, obj in pairs(kunai:GetChildren()) do
+                                            if obj:IsA("BasePart") then
+                                                obj.CanTouch = false
+                                                obj.CanCollide = false
+                                                obj.CanQuery = false
+                                                obj.Transparency = 1
+                                            end
+                                        end
+                                        local stickyPart = kunai.StickyPart
+                                        if stickyPart and not stickyPart:FindFirstChild("KunaiPNG_GUI") then
+                                            local gui = Instance.new("BillboardGui")
+                                            gui.Name = "KunaiPNG_GUI"
+                                            gui.Adornee = stickyPart
+                                            gui.AlwaysOnTop = true
+                                            gui.Size = UDim2.new(1.2, 0, 1.2, 0)
+                                            gui.DistanceUpperLimit = 1000
+                                            gui.Parent = stickyPart
+                                            local img = Instance.new("ImageLabel")
+                                            img.Size = UDim2.fromScale(1, 1)
+                                            img.BackgroundTransparency = 1
+                                            img.Image = "rbxassetid://89062714375517"
+                                            img.Parent = gui
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                    if not kunai then
+                        if service.Workspace.PlotItems.PlayersInPlots:FindFirstChild(localPlayer.Name) then
+                            continue
+                        end
+                        local t = tick()
+                        local spawnedTarget = nil
+                        while not CanSpawnToy.Value do
+                            if not Config.AntikickT or tick() - t > 5 then
+                                break
+                            end
+                            task.wait(0.1)
+                        end
+                        if CanSpawnToy.Value then
+                            local currentHRP = HRP()
+                            if currentHRP then
+                                task.spawn(function()
+                                    pcall(function()
+                                        spawntoy(
+                                            "NinjaShuriken",
+                                            currentHRP.CFrame * CFrame.new(0, 12, 20),
+                                            Vector3.new(0, 0, 0)
+                                        )
+                                    end)
+                                end)
+                            end
+                            if isHome and homeFolder then
+                                spawnedTarget = homeFolder:WaitForChild("NinjaShuriken", 2)
+                            elseif not service.Workspace.PlotItems.PlayersInPlots:FindFirstChild(localPlayer.Name) and inv then
+                                spawnedTarget = inv:WaitForChild("NinjaShuriken", 2)
+                            end
+                        end
+                        kunai = spawnedTarget
+                        if kunai == nil then
+                            continue
+                        end
+                        kunai.Name = "AntiKick"
+                        if not kunai then
+                            continue
+                        end
+                    end
+                    repeat
+                        if kunai
+                            and kunai:FindFirstChild("StickyPart")
+                            and kunai.StickyPart.CanTouch == true then
+                            if kunai:FindFirstChild("StickyPart") then
+                                local currentHRP = HRP()
+                                if currentHRP then
+                                    if kunai:FindFirstChild("SoundPart") then
+                                        if not kunai.SoundPart:FindFirstChild("PartOwner") or kunai.SoundPart.PartOwner.Value ~= localPlayer.Name then
+                                            SetNetworkOwner:FireServer(kunai.SoundPart, kunai.SoundPart.CFrame)
+                                        end
+                                    end
+                                    local firePart = currentHRP:FindFirstChild("FirePlayerPart") or currentHRP:WaitForChild("FirePlayerPart", 5)
+                                    if firePart then
+                                        StickyPartEvent:FireServer(
+                                            kunai.StickyPart,
+                                            firePart,
+                                            CFrame.new(0, 0, 0) * CFrame.Angles(0, math.rad(90), math.rad(90))
+                                        )
+                                    end
+                                    for _, obj in pairs(kunai:GetChildren()) do
+                                        if obj:IsA("BasePart") then
+                                            obj.CanTouch = false
+                                            obj.CanCollide = false
+                                            obj.CanQuery = false
+                                            obj.Transparency = 1
+                                        end
+                                    end
+                                    local stickyPart = kunai.StickyPart
+                                    if stickyPart and not stickyPart:FindFirstChild("KunaiPNG_GUI") then
+                                        local gui = Instance.new("BillboardGui")
+                                        gui.Name = "KunaiPNG_GUI"
+                                        gui.Adornee = stickyPart
+                                        gui.AlwaysOnTop = true
+                                        gui.Size = UDim2.new(1.2, 0, 1.2, 0)
+                                        gui.DistanceUpperLimit = 1000
+                                        gui.Parent = stickyPart
+                                        local img = Instance.new("ImageLabel")
+                                        img.Size = UDim2.fromScale(1, 1)
+                                        img.BackgroundTransparency = 1
+                                        img.Image = "rbxassetid://89062714375517"
+                                        img.Parent = gui
+                                    end
+                                end
+                            end
+                            kunai.Name = "AntiKick"
+                        end
+                        task.wait(0.3)
+                    until not kunai
+                        or not Config.AntikickT
+                        or not kunai:FindFirstChild("StickyPart")
+                        or kunai.StickyPart.CanTouch == false
+                        or not localPlayer.Character
+                        or not localPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        or not kunai:FindFirstChild("StickyPart")
+                        or (localPlayer.Character.HumanoidRootPart.Position - kunai.StickyPart.Position).Magnitude >= 20
+                    if not kunai
+                        or not kunai:FindFirstChild("StickyPart")
+                        or not localPlayer.Character
+                        or not localPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        or (localPlayer.Character.HumanoidRootPart.Position - kunai.StickyPart.Position).Magnitude >= 20 then
+                        local targetInv = workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                        if targetInv and DestroyToy then
+                            for _, v in pairs(targetInv:GetChildren()) do
+                                if v.Name == "AntiKick" or v.Name == "NinjaShuriken" then
+                                    pcall(function()
+                                        DestroyToy:FireServer(v)
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                    pcall(function()
+                        repeat
+                            task.wait(0.05)
+                        until not Config.AntikickT
+                            or not localPlayer.Character
+                            or not localPlayer.Character:FindFirstChild("Humanoid")
+                            or not kunai
+                            or not kunai:FindFirstChild("StickyPart")
+                            or not kunai.StickyPart:FindFirstChild("StickyWeld")
+                            or not kunai.StickyPart.StickyWeld.Part1
+                        if not kunai
+                            or not kunai:FindFirstChild("StickyPart")
+                            or (localPlayer.Character
+                                and localPlayer.Character:FindFirstChild("Humanoid")
+                                and localPlayer.Character.Humanoid.Health <= 0)
+                            or not kunai.StickyPart:FindFirstChild("StickyWeld")
+                            or not kunai.StickyPart.StickyWeld.Part1 then
+                            local targetInv = workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                            if targetInv and DestroyToy then
+                                for _, v in pairs(targetInv:GetChildren()) do
+                                    if v.Name == "AntiKick" or v.Name == "NinjaShuriken" then
+                                        pcall(function()
+                                            DestroyToy:FireServer(v)
+                                        end)
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+            end)
+        else
+            Config.AntikickT = false
+            local targetInv = workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+            if targetInv and DestroyToy then
+                for _, v in pairs(targetInv:GetChildren()) do
+                    if v.Name == "AntiKick" or v.Name == "NinjaShuriken" then
+                        pcall(function()
+                            DestroyToy:FireServer(v)
+                        end)
+                    end
+                end
+            end
+        end
+    end
+})
+
+antikick:AddToggle("AntikickPenc", {
+    Text = "アンチキック (鉛筆✏)",
+    Default = false,
+    Callback = function(Value)
+        Config.Tinko = Value
+        if Config.Tinko then
+            while Config.Tinko do
+                local spawnedFolder = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+                while Config.Tinko and spawnedFolder and not spawnedFolder:FindFirstChild("PencilDDD") do
+                    if localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                        local existingObjects = {}
+                        for _, child in pairs(spawnedFolder:GetChildren()) do
+                            existingObjects[child] = true
+                        end
+						spawntoy(
+							"ToolPencil",
+							CFrame.new(localPlayer.Character.HumanoidRootPart.CFrame.Position) + Vector3.new(0, 0, 15),
+							Vector3.new(0, 0, 0)
+						)
+                        local newPencil = nil
+                        local startTime = tick()
+                        repeat
+                            for _, child in pairs(spawnedFolder:GetChildren()) do
+                                if not existingObjects[child] and child.Name == "ToolPencil" then
+                                    newPencil = child
+                                    break
+                                end
+                            end
+                            task.wait()
+                        until newPencil or (tick() - startTime > 2) or not Config.Tinko
+                        if newPencil then
+                            newPencil.Name = "PencilDDD"
+                        end
+                    end
+                    task.wait()
+                end
+                if localPlayer.Character then
+                    if localPlayer.Character:FindFirstChild("Torso") and localPlayer.Character:FindFirstChild("HumanoidRootPart") and spawnedFolder and spawnedFolder:FindFirstChild("PencilDDD") then
+                        local pencil = spawnedFolder.PencilDDD
+                        if pencil:FindFirstChild("StickyPart") then
+                            if pencil.StickyPart:FindFirstChild("StickyWeld") then
+                                if pencil.StickyPart.StickyWeld.Part1 ~= localPlayer.Character.Torso then
+                                    local a = pencil.SoundPart.CFrame.Position
+                                    local b = localPlayer.Character.HumanoidRootPart.CFrame.Position
+                                    local distance = Vector3.new((a.X - b.X) ^ 2, (a.Y - b.Y) ^ 2, (a.Z - b.Z) ^ 2)
+                                    if math.sqrt(distance.X + distance.Y + distance.Z) > 20 then
+                                        DestroyToy:FireServer(pencil)
+                                    else
+                                        StickyPartEvent:FireServer(pencil.StickyPart, localPlayer.Character.Torso, CFrame.new(0, - 1, 0) * CFrame.Angles(0, math.pi, 0))
+                                        for _, prt in pairs(pencil:GetChildren()) do
+                                            if prt.ClassName == "Part" then
+                                                prt.CanQuery = false
+                                            end
+                                        end
+                                        task.wait(0.2)
+                                        if localPlayer.Character then
+                                            if localPlayer.Character:FindFirstChild("Torso") and localPlayer.Character:FindFirstChild("HumanoidRootPart") and spawnedFolder:FindFirstChild("PencilDDD") then
+                                                if pencil:FindFirstChild("StickyPart") then
+                                                    if pencil.StickyPart:FindFirstChild("StickyWeld") then
+                                                        if pencil.StickyPart.StickyWeld.Part1 ~= localPlayer.Character.Torso then
+                                                            if spawnedFolder:FindFirstChild("PencilDDD") then
+                                                                if pencil.StickyPart.StickyWeld.Part1 ~= localPlayer.Character.Torso then
+                                                                    SetNetworkOwner:FireServer(pencil.SoundPart, pencil.SoundPart.CFrame)
+                                                                end
+                                                            end
+                                                        end
+                                                    end
+                                                end
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                task.wait()
+            end
+        else
+            local spawnedFolder = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+            if spawnedFolder then
+                local dddPencil = spawnedFolder:FindFirstChild("PencilDDD")
+                if dddPencil then
+                    DestroyToy:FireServer(dddPencil)
+                end
+            end
+        end
+    end,
+})
+
+antikick:AddToggle("Antireset", {
+	Text = "自動リセット",
+    Default = true,
+    Callback = function(Value)
+        Config.AntikickResetToggle = Value
+        if Config.AntikickResetToggle then
+            Config.Contuuti['GameNotify'] = GameCorrectionsNotify.OnClientEvent:Connect(function(actionType)
+                if actionType == "Flying" then
+                    Struggle:FireServer(localPlayer)
+                    local parent = GetCharacter()
+                    local childName = "Humanoid"
+                    local humanoid = parent:FindFirstChild(childName) or parent:WaitForChild(childName, nil)
+                    if humanoid then
+                        humanoid.Health = 0
+                    end
+                end
+            end)
+        else
+            local playname = "GameNotify"
+            for connectionName, connection in Config.Contuuti do
+                if connectionName:find(playname) then
+                    connection:Disconnect()
+                    connection = nil
+                end
+            end
+        end
+    end
+})
+
+antikick:AddToggle("Antileave", {
+	Text = "自動退出",
+    Default = false,
+    Callback = function(Value)
+        Config.AntikickLeaveToggle = Value
+        if Config.AntikickLeaveToggle then
+            Config.Contuuti['GameLeaveNotify'] = GameCorrectionsNotify.OnClientEvent:Connect(function(actionType)
+                if actionType == "Flying" then
+                    localPlayer:Kick("切断してBANを防ぎました。[by: Vortex]")
+                end
+            end)
+        else
+            local localname = "GameLeaveNotify"
+            for connectionName, connection in Config.Contuuti do
+                if connectionName:find(localname) then
+                    connection:Disconnect()
+                    connection = nil
+                end
+            end
+        end
+    end
+})
+
+antikick:AddToggle("AntiEnable", {
+	Text = "自動有効化",
+    Default = true,
+    Callback = function(Value)
+        Config.AutoTurnOnAntiKick = Value
+        if Config.AutoTurnOnAntiKick then
+            Config.Contuuti['AntiKickAutoOn'] = GameCorrectionsNotify.OnClientEvent:Connect(function(actionType)
+                if actionType == "Flying" then
+                    if not Config.antikick and Config.AntiKickToggle then
+                        Config.AntiKickToggle:Set(true)
+                    end
+                end
+            end)
+        else
+            if Config.Contuuti['AntiKickAutoOn'] then
+                Config.Contuuti['AntiKickAutoOn']:Disconnect()
+                Config.Contuuti['AntiKickAutoOn'] = nil
+            end
+        end
+    end
 })
