@@ -3498,3 +3498,406 @@ spamde:AddToggle("KickspamRag", {
         end
     end
 })
+
+	-- ===== 分割9: Target タブ 続き =====
+Bring:AddDropdown("Bringmode", {
+    Text = "引き寄せ方法",
+    Values = {"GRAB", "BLOBMAN"},
+    Default = "GRAB",
+    Callback = function(Value)
+        Config.BringMode = Value
+    end
+})
+
+local function getBlobman()
+    local inv = SpawnedInToys
+    local v = inv and inv:FindFirstChild("CreatureBlobman")
+    if not v then
+        for _, p in ipairs(PlotItems:GetChildren()) do
+            local m = p:FindFirstChild("CreatureBlobman")
+            if m and m:FindFirstChild("PlayerValue") and m.PlayerValue.Value == localPlayer.Name then
+                v = m
+                break
+            end
+        end
+    end
+    return v
+end
+
+local function spawnBLob2()
+    local char = GetCharacter()
+    local tFolder = service.Workspace:WaitForChild(localPlayer.Name .. "SpawnedInToys")
+    local existing = tFolder:FindFirstChild("CreatureBlobman")
+    if existing then 
+        return existing 
+    end
+    task.spawn(function()
+        pcall(function() 
+            spawntoy("CreatureBlobman", char.Head.CFrame, Vector3.new(0, 0, 0)) 
+        end)
+    end)
+    local blobman
+    for _ = 1, 50 do
+        blobman = tFolder:FindFirstChild("CreatureBlobman")
+        if blobman then 
+            break 
+        end
+        task.wait(0.05)
+    end
+    return blobman
+end
+
+local function sitOnBlobman(blobman)
+    local char = localPlayer.Character
+    if not char then return end
+
+    local root = char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChild("Humanoid")
+    if not root or not humanoid then return end
+
+    if not blobman then
+        spawnBLob2()
+        blobman = getBlobman() 
+    end
+
+    if blobman then
+        local seat = blobman:FindFirstChildOfClass("VehicleSeat") or blobman:FindFirstChild("VehicleSeat")
+        
+        if seat and humanoid.SeatPart ~= seat then
+            seat:Sit(humanoid)
+        end
+    end
+end
+Bring:AddButton({
+    Text = "引き寄せ",
+    Func = function()
+        local selected = Config.PlayerList
+        local EmptyTable = type(selected) == "table" and #selected == 0
+        local EmptyString = type(selected) == "string" and (selected == "" or selected == nil)
+        if not selected or EmptyTable or EmptyString then
+            return
+        end
+        local targetList = type(selected) == "table" and selected or {selected}
+        local validTargets = {}
+        for _, playerName in ipairs(targetList) do
+            local Player = service.Players:FindFirstChild(playerName)
+            if Player and Player.Character then
+                table.insert(validTargets, Player)
+            end
+        end
+        if #validTargets == 0 then
+            return
+        end
+        local mode = Config.BringMode or "GRAB"
+        local Camera = workspace.CurrentCamera
+        local originalCameraCFrame = Camera.CFrame
+        local originalCameraType = Camera.CameraType
+        local character = GetCharacter()
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+        if mode == "GRAB" then
+            Camera.CameraType = Enum.CameraType.Scriptable
+            Camera.CFrame = originalCameraCFrame
+            local root = character and character:WaitForChild("HumanoidRootPart")
+            if not root then 
+                Camera.CameraType = originalCameraType
+                Camera.CFrame = originalCameraCFrame
+                return 
+            end
+            for _, targetPlayer in ipairs(validTargets) do
+                if targetPlayer.Character and targetPlayer.Character.Parent == workspace then
+                    local targetCharacter = targetPlayer.Character
+                    local torso = targetCharacter:FindFirstChild("Torso")
+                    local head = targetCharacter:FindFirstChild("Head")
+                    local hrp = targetCharacter:FindFirstChild("HumanoidRootPart")
+                    if torso then
+                        Struggle:FireServer()
+                        local char = GetCharacter()
+                        local myHrp = char and char:FindFirstChild("HumanoidRootPart")
+                        if myHrp then
+                            local stop = false
+                            task.spawn(function()
+                                repeat
+                                    task.wait(0.01)
+                                    if torso:FindFirstChild("PartOwner") and torso:FindFirstChild("PartOwner").Value == p.Name then
+                                        stop = true
+                                        break
+                                    end
+                                until stop
+                            end)
+                            local maxRange = 24
+                            local isNear = (torso.Position - myHrp.Position).Magnitude <= maxRange
+                            if isNear then
+                                for i = 1, 12 do
+                                    if stop then break end
+                                    SetNetworkOwner:FireServer(torso, torso.CFrame)
+                                    task.wait(0.02)
+                                end
+                            else
+                                local origPos = myHrp.CFrame
+                                task.wait(0.03)
+                                for i = 1, 18 do
+                                    if stop then break end
+                                    
+                                    local vel = torso.AssemblyLinearVelocity
+                                    local predPos
+                                    if vel.Magnitude < 2 then
+                                        predPos = torso.Position
+                                    else
+                                        local pingMs = service.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+                                        local predTime = (pingMs / 1000) * 0.8 + 0.05
+                                        local gravity = Vector3.new(0, - workspace.Gravity * 0.5, 0)
+                                        predPos = torso.Position + (vel * predTime) + (gravity * predTime * predTime * 0.5)
+                                    end
+                                    myHrp.CFrame = CFrame.new(predPos) * CFrame.new(0, 10, 0)
+                                    task.wait(0.01)
+                                    SetNetworkOwner:FireServer(torso, torso.CFrame)
+                                end
+                                task.wait(0.01)
+                                myHrp.CFrame = origPos
+                            end
+                            stop = true
+                            task.spawn(function()
+                                repeat 
+                                    task.wait() 
+                                until (head and not head:IsGrounded() and head.AssemblyRootPart.ReceiveAge == 0) or not targetCharacter.Parent
+                                local currentMyHrp = GetCharacter() and GetCharacter():FindFirstChild("HumanoidRootPart")
+                                if currentMyHrp and torso then
+                                    torso.CFrame = currentMyHrp.CFrame + (currentMyHrp.CFrame.LookVector * 5)
+                                    if hrp then
+                                        hrp.AssemblyLinearVelocity = Vector3.zero
+                                    end
+                                end
+                            end)
+
+                            DestroyGrabLine:FireServer(torso)
+                        end
+                    end
+                end
+            end
+            Camera.CameraType = originalCameraType
+            Camera.CFrame = originalCameraCFrame
+            if humanoid then
+                Camera.CameraSubject = humanoid
+            end
+        elseif mode == "BLOBMAN" then
+            local blobman = spawnBLob2()
+            if not blobman then 
+                return 
+            end
+            sitOnBlobman(blobman)
+            local myChar = GetCharacter()
+            local myHrp = myChar and myChar:FindFirstChild("HumanoidRootPart")
+            local humanoid2 = myChar and myChar:FindFirstChildOfClass("Humanoid")
+            if not myHrp or not humanoid2 then 
+                return 
+            end
+            local isSeatedInVehicle = false
+            for _ = 1, 30 do
+                if humanoid2.SeatPart and humanoid2.SeatPart:IsA("VehicleSeat") then
+                    isSeatedInVehicle = true
+                    break
+                end
+                task.wait(0.05)
+            end
+            if not isSeatedInVehicle then 
+                return 
+            end
+            for _, targetPlayer in ipairs(validTargets) do
+                local targetHrp = targetPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if targetHrp then
+                    local originalCFrame = myHrp.CFrame
+                    pcall(function()
+                        myHrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, -3)
+                        myHrp.AssemblyLinearVelocity = Vector3.zero
+                    end)
+                    task.wait(0.15)
+                    for _ = 1, 15 do
+                        local validTarget = nil
+                        if typeof(targetPlayer) == "Instance" and targetPlayer:IsA("Player") then
+                            validTarget = targetPlayer
+                        end
+                        local currentHumanoid = myChar:FindFirstChildOfClass("Humanoid")
+                        if currentHumanoid and currentHumanoid.SeatPart and validTarget then
+                            local seatParent = currentHumanoid.SeatPart.Parent
+                            if seatParent and seatParent:FindFirstChild("LeftDetector") then
+                                local grabArgs = {
+                                    seatParent.LeftDetector,
+                                    targetPlayer.Character.HumanoidRootPart,
+                                    seatParent.LeftDetector:FindFirstChild("LeftWeld")
+                                }
+                                local creatureGrab = seatParent.BlobmanSeatAndOwnerScript.CreatureGrab
+                                creatureGrab:FireServer(unpack(grabArgs))
+                            end
+                        end
+                        task.wait(0.02)
+                        local isGrabbed = false
+                        if currentHumanoid and currentHumanoid.Sit and currentHumanoid.SeatPart and tostring(currentHumanoid.SeatPart.Parent) == "CreatureBlobman" then
+                            _G.blobseat = currentHumanoid.SeatPart.Parent
+                            local leftWeld = currentHumanoid.SeatPart.Parent:FindFirstChild("LeftDetector") and currentHumanoid.SeatPart.Parent.LeftDetector:FindFirstChild("LeftWeld")
+                            if leftWeld and leftWeld.Attachment0 and leftWeld.Attachment0.Parent then
+                                local grabbedPlayer = service.Players:GetPlayerFromCharacter(leftWeld.Attachment0.Parent.Parent)
+                                if grabbedPlayer == targetPlayer then
+                                    isGrabbed = true
+                                end
+                            end
+                        end
+
+                        if isGrabbed then break end
+                    end
+                    task.wait(0.04)
+                    pcall(function()
+                        myHrp.CFrame = originalCFrame
+                        myHrp.AssemblyLinearVelocity = Vector3.zero
+                    end)
+
+                    task.wait(0.2)
+                end
+            end
+            if humanoid2 then
+                Camera.CameraSubject = humanoid2
+            end
+        end
+    end
+})
+
+blobkill:AddToggle("blobkillLoop", {
+    Text = "ループキル",
+    Default = false,
+    Callback = function(Value)
+        Config.Loopkillblob = Value
+        if Value then
+            if not Config.PlayerList or #Config.PlayerList== 0 then
+                task.spawn(function()
+                    Toggles.blobkillLoop:SetValue(false)
+                end)
+                return
+            end
+            local char = localPlayer.Character
+            local hum = char:FindFirstChild("Humanoid") or char:WaitForChild("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart") or char:WaitForChild("HumanoidRootPart")
+            local oldCF = char:GetPivot()
+            if Config.I9J0 == nil or not (Config.I9J0:FindFirstChild("VehicleSeat") ~= nil) or Config.I9J0.VehicleSeat.Occupant ~= hum then 
+                Config.I9J0 = hum.SeatPart and hum.SeatPart:FindFirstAncestor("CreatureBlobman")
+            end 
+            local blob = Config.I9J0
+            if not blob then
+                if InPlot.Value and not InOwnedPlot.Value then 
+                    InPlot:GetPropertyChangedSignal("Value"):Wait()
+                end 
+                if not CanSpawnToy.Value then 
+                    CanSpawnToy:GetPropertyChangedSignal("Value"):Wait()
+                end
+                local SpawnCF = (Config.A1B2 or hrp).CFrame * CFrame.new(0, 14, 20)
+                local Container
+                if InOwnedPlot.Value then
+                    if Config.LastHouse == nil or Config.LastPlotOwner == nil or Config.LastPlotOwner.Parent == nil then 
+                        for i = 1, 5 do 
+                            local Plot = workspace.Plots["Plot"..i]
+                            for _, v in pairs(Plot.PlotSign["ThisPlotsOwners"]:GetChildren()) do 
+                                if v.Value == localPlayer.Name then 
+                                    Config.LastHouse = workspace.PlotItems["Plot"..i]
+                                    Config.LastPlotOwner = v 
+                                    break
+                                end
+                            end
+                            if Config.LastHouse then break end
+                        end
+                    end
+                    Container = Config.LastHouse
+                else
+                    Container = SpawnedInToys
+                end
+                if Container then
+                    local spawnedObject = nil
+                    local connection
+                    connection = Container.ChildAdded:Connect(function(child)
+                        if child.Name == "CreatureBlobman" then
+                            spawnedObject = child
+                        end
+                    end)
+                    task.spawn(function()
+                        pcall(function()
+                            spawntoy("CreatureBlobman", SpawnCF, Vector3.zero)
+                        end)
+                    end)
+                    local start = tick()
+                    repeat task.wait() until spawnedObject or (tick() - start) > 2.5
+                    connection:Disconnect()
+                    blob = spawnedObject
+                end
+            end
+            if not blob then return end
+            local vSeat = blob:FindFirstChild("VehicleSeat") or blob:WaitForChild("VehicleSeat")
+            vSeat:Sit(hum)
+            local blobScript = blob:FindFirstChild("BlobmanSeatAndOwnerScript") or blob:WaitForChild("BlobmanSeatAndOwnerScript")
+            local CreatureGrab = blobScript:FindFirstChild("CreatureGrab") or blobScript:WaitForChild("CreatureGrab")
+            local CreatureRelease = blobScript:FindFirstChild("CreatureRelease") or blobScript:WaitForChild("CreatureRelease")
+            local RightDetector = blob:FindFirstChild("RightDetector") or blob:WaitForChild("RightDetector")
+            local RightWeld = RightDetector and (RightDetector:FindFirstChild("RightWeld") or RightDetector:WaitForChild("RightWeld"))
+            while not hum.SeatPart do task.wait() end 
+            task.spawn(function()
+                while Config.Loopkillblob and task.wait() do  
+                    if not Config.PlayerList or #Config.PlayerList == 0 then
+                        task.wait(0.5)
+                        continue
+                    end
+                    for _, playerName in ipairs(Config.PlayerList) do
+                        if not Config.Loopkillblob then break end
+                        local targetPlr = service.Players:FindFirstChild(playerName)
+                        if not targetPlr or not targetPlr.Character then continue end
+                        Config.C3D4 = targetPlr
+                        Config.E5F6 = targetPlr.Character and targetPlr.Character:FindFirstChild("HumanoidRootPart")
+                        Config.G7H8 = targetPlr.Character:FindFirstChild("Humanoid")
+                        local targetAboveLimit = true
+                        if targetPlr and targetPlr.Character and targetPlr.Character:FindFirstChild("HumanoidRootPart") then
+                            targetAboveLimit = targetPlr.Character.HumanoidRootPart.Position.Y > Config.HeightLimit
+                        end
+                        if (not Config.E5F6 or not Config.G7H8) or targetAboveLimit or Config.G7H8.Health == 0 then 
+                            continue 
+                        end 
+                        oldCF = char:GetPivot() 
+                        while not RightWeld.Attachment0 and Config.Loopkillblob do
+                            task.wait(0.05)
+                            Config.E5F6 = targetPlr.Character and targetPlr.Character:FindFirstChild("HumanoidRootPart")
+                            Config.G7H8 = targetPlr.Character:FindFirstChild("Humanoid")
+                            local loopTargetAboveLimit = true
+                            if targetPlr and targetPlr.Character and targetPlr.Character:FindFirstChild("HumanoidRootPart") then
+                                loopTargetAboveLimit = targetPlr.Character.HumanoidRootPart.Position.Y > Config.HeightLimit
+                            end
+                            if (not Config.E5F6 or not Config.G7H8) or loopTargetAboveLimit or Config.G7H8.Health == 0 then 
+                                char:PivotTo(oldCF) 
+                                break 
+                            end 
+                            if not hum.SeatPart then  
+                                SpawnedInToys:FindFirstChild("CreatureBlobman").VehicleSeat:Sit(hum)
+                            end 
+                            char:PivotTo(Config.E5F6.CFrame)
+                            hrp.AssemblyLinearVelocity = Vector3.zero
+                            hrp.AssemblyAngularVelocity = Vector3.zero
+                            CreatureGrab:FireServer(RightDetector, Config.E5F6, RightWeld)
+                        end 
+                        if not Config.Loopkillblob then break end
+                        CreatureRelease:FireServer(RightWeld, Config.E5F6)
+                        char:PivotTo(Config.E5F6.CFrame)
+                        for _ = 1, 10 do 
+                            hrp.AssemblyLinearVelocity = Vector3.zero
+                            hrp.AssemblyAngularVelocity = Vector3.zero
+                            CreatureGrab:FireServer(RightDetector, Config.E5F6, RightWeld)
+                            CreatureRelease:FireServer(RightWeld, Config.E5F6)
+                            if Config.E5F6 and Config.E5F6:IsDescendantOf(workspace) and Config.E5F6.ReceiveAge == 0 then  
+                                Config.G7H8.BreakJointsOnDeath = false
+                                Config.G7H8:ChangeState(Enum.HumanoidStateType.Dead)
+                                Config.G7H8.Sit = false 
+                                Config.G7H8.Jump = true
+                            end 
+                            task.wait()
+                        end
+                        char:PivotTo(oldCF)
+                        hrp.AssemblyLinearVelocity = Vector3.zero
+                        hrp.AssemblyAngularVelocity = Vector3.zero
+                    end
+                end
+            end)
+        end
+    end
+})
