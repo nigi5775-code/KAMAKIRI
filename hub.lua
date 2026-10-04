@@ -2960,3 +2960,541 @@ antikick:AddToggle("AntiEnable", {
         end
     end
 })
+
+	-- ===== 分割8: Target タブ =====
+local function runTPPLoop()
+	task.spawn(function()
+		while Config.TargetAntigrabtpT do
+			local HRP = HRP()
+			service.RunService.RenderStepped:Wait()
+			if #Config.PlayerListAnti == 0 then 
+				continue
+			end
+			for _, targetName in ipairs(Config.PlayerListAnti) do
+				target = service.Players:FindFirstChild(targetName)
+				if not target or not target.Character then
+					continue
+				end
+				char = target.Character
+				hrp = char:FindFirstChild("HumanoidRootPart")
+				head = char:FindFirstChild("Head")
+				if not hrp or not head then
+					continue
+				end
+				partOwner = head:FindFirstChild("PartOwner")
+				if not partOwner or partOwner.Value == "" or partOwner.Value == localPlayer.Name then
+					continue
+				end
+				distance = (hrp.Position - HRP.Position).Magnitude
+				if distance <= 30 then
+					pcall(function()
+						SetNetworkOwner:FireServer(hrp, hrp.CFrame)
+						CreateGrabLine:FireServer(hrp, Vector3.zero, hrp.Position, false)
+					end)
+					weOwnIt = head:FindFirstChild("PartOwner") and head.PartOwner.Value == localPlayer.Name
+					if weOwnIt then
+						if Config.tpmode == "Bring" then
+							hrp.CFrame = HRP.CFrame * CFrame.new(0, 5, 0)
+							hrp.AssemblyLinearVelocity = Vector3.zero
+							hrp.AssemblyAngularVelocity = Vector3.zero
+						end
+						pcall(function()
+							DestroyGrabLine:FireServer(hrp)
+						end)
+					end
+				else
+					saved = HRP.CFrame
+					HRP.CFrame = hrp.CFrame * CFrame.new(0, 0, 2)
+					task.wait(0.05)
+					for i = 1, 15 do
+						pcall(function()
+							SetNetworkOwner:FireServer(hrp, hrp.CFrame)
+							CreateGrabLine:FireServer(hrp, Vector3.zero, hrp.Position, false)
+						end)
+						task.wait(0.01)
+					end
+					weOwnIt = head:FindFirstChild("PartOwner") and head.PartOwner.Value == localPlayer.Name
+					if weOwnIt then
+						if Config.tpmode == "Bring" then
+							hrp.CFrame = saved * CFrame.new(0, 5, 0)
+							hrp.AssemblyLinearVelocity = Vector3.zero
+							hrp.AssemblyAngularVelocity = Vector3.zero
+							task.wait(0.05)
+						end
+						pcall(function()
+							DestroyGrabLine:FireServer(hrp)
+						end)
+					end
+					HRP.CFrame = saved
+					HRP.AssemblyLinearVelocity = Vector3.zero
+					HRP.AssemblyAngularVelocity = Vector3.zero
+				end
+			end
+		end
+	end)
+end
+
+local Tar = dadadadad:AddPlayersDropdown("TargetSelect1", {
+    Text = "対象選択",
+    Multi = false,
+    ExcludeLocalPlayer = true,
+    Searchable = false,
+    EnablePlayerImages = true,
+    Callback = function(player)
+        if player then
+            Config.PlayerListAnti = { player.Name }
+        else
+            Config.PlayerListAnti = {}
+        end
+    end,
+})
+
+dadadadad:AddDropdown("Config.tpmode", {
+	Text = "方法",
+	Values = {"Grab", "Bring"},
+	Default = "Grab",
+	Callback = function(v)
+		Config.tpmode = v
+	end
+})
+
+dadadadad:AddToggle("TPPEnabled", {
+	Text = "アンチグラブ",
+	Default = false,
+	Callback = function(v)
+		Config.TargetAntigrabtpT = v
+		if v then
+			runTPPLoop()
+		end
+	end
+})
+
+dadadadad:AddToggle("TPPAntiKick", {
+	Text = "アンチキック",
+	Default = false,
+	Callback = function(v)
+		if not v then
+			for _, targetName in ipairs(Config.PlayerListAnti) do
+				target = service.Players:FindFirstChild(targetName)
+				if target then
+					targetInv = service.Workspace:FindFirstChild(target.Name .. "SpawnedInToys")
+					if targetInv and targetInv:FindFirstChild("TPPShuriken_" .. targetName) then
+						pcall(function() DestroyToy:FireServer(targetInv["TPPShuriken_" .. targetName]) end)
+					end
+				end
+			end
+			return
+		end
+		task.spawn(function()
+			shurikens = {}
+			setupDone = {}
+			while Toggles.TPPAntiKick.Value do
+				service.RunService.RenderStepped:Wait()
+				if #Config.PlayerListAnti == 0 then
+					continue
+				end
+				for _, targetName in ipairs(Config.PlayerListAnti) do 
+					pcall(function()
+						target = service.Players:FindFirstChild(targetName)
+						if not target or not target.Character then
+							setupDone[targetName] = false
+							return
+						end
+						targetChar = target.Character
+						targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+						targetFirePart = targetHRP and targetHRP:FindFirstChild("FirePlayerPart")
+
+						if not targetHRP or not targetFirePart then
+							return
+						end
+						myChar = localPlayer.Character
+						myHRP = myChar and myChar:FindFirstChild("HumanoidRootPart")
+						if myHRP then
+							dist = (targetHRP.Position - myHRP.Position).Magnitude
+							if dist > 30 then
+								setupDone[targetName] = false
+								return
+							end
+						end
+						targetInv = service.Workspace:FindFirstChild(target.Name .. "SpawnedInToys")
+						if not targetInv then
+							return
+						end
+						shuName = "TPPShuriken_" .. targetName
+						shuData = shurikens[targetName]
+						shu = shuData and shuData.toy
+						part = shuData and shuData.part
+						shuExists = shu and shu.Parent ~= nil
+						partExists = part and part.Parent ~= nil
+						if setupDone[targetName] and (not shuExists or not partExists) then
+							setupDone[targetName] = false
+							shurikens[targetName] = nil
+						end
+						if not setupDone[targetName] then
+							if not target.CanSpawnToy or not target.CanSpawnToy.Value then
+								return
+							end
+							local function spawntoy(toy, cf)
+								if not localPlayer.CanSpawnToy.Value then
+									localPlayer.CanSpawnToy.Changed:Wait()
+								end
+								local t
+								local toyadded
+								inv = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+								toyadded = inv.ChildAdded:Connect(function(c)
+									if c.Name == toy then
+										t = c
+										toyadded:Disconnect()
+									end
+								end)
+								task.spawn(function()
+									SpawnToyRemoteFunction:InvokeServer(toy, cf, Vector3.new(0, 0, 0))
+								end)
+								time = tick() + 1
+								repeat task.wait() until t or tick() > time
+								if t then
+									return t
+								else
+									return nil
+								end
+							end
+							shu = spawntoy("NinjaShuriken", targetHRP.CFrame * CFrame.new(5, 10, 20))
+							if not shu then
+								return
+							end
+							shu.Name = shuName
+							part = shu:WaitForChild("StickyPart", 0.5)
+							if not part then
+								return
+							end
+							SetNetworkOwner:FireServer(part, part.CFrame)
+							task.wait(0.1)
+							StickyPartEvent:FireServer(part, targetFirePart, CFrame.new(0, 0, 0, 1, 0, 0, 0, 0, -1, 0, 1, 0))
+							shurikens[targetName] = {
+								toy = shu,
+								part = part,
+							}
+							setupDone[targetName] = true
+						end
+						if part and part:FindFirstChild("PartOwner") and part.PartOwner.Value ~= localPlayer.Name then
+							SetNetworkOwner:FireServer(part, part.CFrame)
+						end
+						for _, toy in ipairs(targetInv:GetChildren()) do
+							if toy:FindFirstChild("StickyPart") then
+								sp = toy.StickyPart
+								po = sp:FindFirstChild("PartOwner")
+								sw = sp:FindFirstChild("StickyWeld")
+								if po and po.Value ~= "" and po.Value ~= target.Name then
+									SetNetworkOwner:FireServer(sp, sp.CFrame)
+									task.wait()
+									if po.Value == localPlayer.Name then
+										sp.CFrame = CFrame.new(0, 0/0, 0)
+									end
+								end
+								if sw and sw.Part1 then
+									weldParent = sw.Part1.Parent
+									if weldParent and weldParent ~= targetChar then
+										SetNetworkOwner:FireServer(sp, sp.CFrame)
+										task.wait()
+										if po and po.Value == localPlayer.Name then
+											sp.CFrame = CFrame.new(0, 0/0, 0)
+										end
+									end
+								end
+							end
+						end
+					end)
+				end
+			end
+			for targetName, data in pairs(shurikens) do
+				pcall(function()
+					if data.toy then
+						DestroyToy:FireServer(data.toy)
+					end
+				end)
+			end
+			shurikens = {}
+			setupDone = {}
+		end)
+	end
+})
+
+
+local TargetDropdown = Targ:AddPlayersDropdown("TargetSelect", {
+    Text = "対象選択",
+    Multi = false,
+    ExcludeLocalPlayer = true,
+    Searchable = false,
+    EnablePlayerImages = true,
+    Callback = function(player)
+        if player then
+            Config.PlayerList = { player.Name }
+        else
+            Config.PlayerList = {}
+        end
+    end,
+})
+
+spamde:AddToggle("KickspamRag", {
+    Text = "キックスパム(ラグドール&ラグ)",
+    Default = false,
+    Callback = function(aa61)
+        Config.aa6 = aa61
+        Config.aa13 = aa61
+        if aa61 then
+            if not Config.PlayerList or #Config.PlayerList == 0 then
+                task.spawn(function()
+                    Toggles.KickspamRag:SetValue(false)
+                end)
+                return
+            end
+        end
+        
+        local function aa31(aa32, aa33, aa34)
+            return aa32:FindFirstChild(aa33) or aa32:WaitForChild(aa33, aa34 or 5)
+        end
+        
+        local function aa35(aa36)
+            if aa36 and aa36:IsA("BasePart") then
+                SetNetworkOwner:FireServer(aa36, aa36.CFrame)
+                task.wait()
+            end
+        end
+        
+        local function aa37(aa38, aa39)
+            return aa38:FindFirstChild(aa39) ~= nil
+        end
+        
+        local function aa40(aa41)
+            local aa42 = GetCharacter()
+            local aa43 = aa42:WaitForChild("HumanoidRootPart")
+            local waitCount = 0
+            while (localPlayer.InPlot.Value and not localPlayer.InOwnedPlot.Value) and waitCount < 50 do
+                task.wait(0.1)
+                waitCount = waitCount + 1
+            end
+            waitCount = 0
+            while not localPlayer.CanSpawnToy.Value and waitCount < 50 do
+                task.wait(0.1)
+                waitCount = waitCount + 1
+            end
+            local aa44 = aa43.CFrame * CFrame.new(0, 14, 20)
+            local aa45 = workspace:FindFirstChild(localPlayer.Name.."SpawnedInToys")
+            if not aa45 then
+                aa45 = workspace:FindFirstChild("PlotItems")
+                if aa45 then
+                    aa45 = aa45:FindFirstChild("Plot1")
+                end
+            end
+            if not aa45 then
+                aa45 = workspace
+            end
+            local aa46 = nil
+            local aa47 = aa45.ChildAdded:Connect(function(aa48)
+                if aa48.Name == aa41 then
+                    aa46 = aa48
+                end
+            end)
+            task.spawn(function()
+                pcall(function()
+                    spawntoy(aa41, aa44, Vector3.zero)
+                end)
+            end)
+            local aa49 = tick()
+            repeat task.wait(0.05) until aa46 or (tick() - aa49) > 5
+            aa47:Disconnect()
+            return aa46
+        end
+        
+        local function aa50()
+            if Config.aa17 then return nil end
+            Config.aa17 = true
+            local aa51 = aa40("PalletLightBrown")
+            if not aa51 then
+                Config.aa17 = false
+                return nil
+            end
+            local aa52 = aa31(aa51, "SoundPart", 3)
+            if not aa52 then
+                aa51:Destroy()
+                Config.aa17 = false
+                return nil
+            end
+            local retryCount = 0
+            while retryCount < 10 do
+                if not Config.aa13 then
+                    aa51:Destroy()
+                    Config.aa17 = false
+                    return nil
+                end
+                aa35(aa52)
+                task.wait()
+                if aa37(aa52, "PartOwner") then
+                    break
+                end
+                retryCount = retryCount + 1
+            end
+            if not aa37(aa52, "PartOwner") then
+                aa51:Destroy()
+                Config.aa17 = false
+                return nil
+            end
+            for _, aa54 in pairs(aa51:GetDescendants()) do
+                if aa54:IsA("BasePart") then
+                    aa54.CanCollide = false
+                    aa54.Transparency = 0.8
+                end
+            end
+            aa51.Name = "RagdollPalete"
+            local aa55 = Instance.new("BodyVelocity")
+            aa55.MaxForce = Vector3.new(0, math.huge, 0)
+            aa55.Velocity = Vector3.new(0, 900, 0)
+            aa55.Parent = aa52
+
+            Config.aa17 = false
+            return aa51
+        end
+        
+        local function aa25(aa26, aa27)
+            if not aa26.Character then return end
+            local aa28 = aa26.Character:FindFirstChild("HumanoidRootPart")
+            if not aa28 or not aa27 then return end
+            local aa29 = aa27.CFrame
+            aa27.CFrame = aa28.CFrame * CFrame.new(0, 0, 2)
+            for aa30 = 1, 15 do
+                SetNetworkOwner:FireServer(aa28, aa28.CFrame)
+                task.wait()
+            end
+            aa27.CFrame = aa29
+        end
+        
+        local function startLagSpam()
+            if Config.running then return end
+            if not Config.PlayerList or #Config.PlayerList == 0 then return end
+            if not CreateGrabLine then
+                CreateGrabLine = Events.GrabEvents:WaitForChild("CreateGrabLine", 3)
+                if not CreateGrabLine then return end
+            end
+            Config.running = true
+            task.spawn(function()
+                while Config.running do
+                    local spawnLocation = service.Workspace:FindFirstChild("SpawnLocation")
+                        or service.Workspace:FindFirstChild("Spawn")
+                        or (localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart"))
+
+                    if spawnLocation then
+                        CreateGrabLine:FireServer(spawnLocation, CFrame.new(math.random(-2010000000, 2000000001), 0, math.random(-2008100000, 2000200000)))
+                    end
+                    task.wait(0.001)
+                end
+            end)
+        end
+        
+        local function stopLagSpam()
+            if not Config.running then return end
+            Config.running = false
+        end
+        
+        if aa61 then
+            if not Config.PlayerList or #Config.PlayerList == 0 then
+                return
+            end
+            task.wait(0.5)
+            task.defer(function()
+                startLagSpam()
+            end)
+        else
+            stopLagSpam()
+        end
+        if Config.aa6 then
+            task.spawn(function()
+                while Config.aa6 do
+                    local targets = type(Config.PlayerList) == "table" and Config.PlayerList or {Config.PlayerList}
+                    for _, targetName in ipairs(targets) do
+                        local aa62 = service.Players:FindFirstChild(targetName)
+                        local aa63 = localPlayer.Character
+                        local aa64 = aa63 and aa63:FindFirstChild("HumanoidRootPart")
+                        if aa62 and aa64 then
+                            local aa65 = aa62.Character
+                            local aa66 = aa65 and aa65:FindFirstChild("HumanoidRootPart")
+                            if aa66 then
+                                local aa67 = (aa64.Position - aa66.Position).Magnitude
+                                if aa67 > Config.aa9 then
+                                    aa25(aa62, aa64)
+                                end
+                                SetNetworkOwner:FireServer(aa66, aa66.CFrame)
+                                if DestroyGrabLine then
+                                    DestroyGrabLine:FireServer(aa66)
+                                end
+                                aa66.AssemblyLinearVelocity = Vector3.zero
+                                aa66.AssemblyAngularVelocity = Vector3.zero
+                                local aa68 = aa66:FindFirstChild("ControlBP")
+                                if not aa68 then
+                                    aa68 = Instance.new("BodyPosition")
+                                    aa68.Name = "ControlBP"
+                                    aa68.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                                    aa68.P = 800000
+                                    aa68.Parent = aa66
+                                end
+                                aa68.Position = aa64.Position + Vector3.new(0, 15, 0)
+                            end
+                        end
+                    end
+                    task.wait(0.001)
+                end
+                local targets = type(Config.PlayerList) == "table" and Config.PlayerList or {Config.PlayerList}
+                for _, targetName in ipairs(targets) do
+                    local aa69 = service.Players:FindFirstChild(targetName)
+                    if aa69 and aa69.Character then
+                        local aa70 = aa69.Character:FindFirstChild("HumanoidRootPart")
+                        if aa70 and aa70:FindFirstChild("ControlBP") then
+                            aa70.ControlBP:Destroy()
+                        end
+                    end
+                end
+            end)
+        end
+        if aa61 then
+            local aa71 = workspace:FindFirstChild(localPlayer.Name.."SpawnedInToys")
+            local aa72 = nil
+            Config.aa73 = service.RunService.RenderStepped:Connect(function()
+                if not Config.aa13 then return end
+                if not Config.PlayerList or #Config.PlayerList == 0 then return end
+                local targets = type(Config.PlayerList) == "table" and Config.PlayerList or {Config.PlayerList}
+                local targetName = targets[1]
+                if not targetName then return end
+                local aa74 = service.Players:FindFirstChild(targetName)
+                if not aa74 or not aa74.Character then return end
+                local aa75 = aa74.Character:FindFirstChild("HumanoidRootPart")
+                local aa76 = aa74.Character:FindFirstChild("Humanoid")
+                if not aa75 or not aa76 then return end
+                if aa72 and aa72:IsDescendantOf(workspace) then
+                    local aa77 = aa72:FindFirstChild("SoundPart")
+                    if aa77 then
+                        if not aa37(aa77, "PartOwner") then
+                            aa72:Destroy()
+                            aa72 = nil
+                        end
+                    else
+                        aa72:Destroy()
+                        aa72 = nil
+                    end
+                end
+                if not Config.aa17 and (not aa72 or not aa72:IsDescendantOf(workspace)) then
+                    aa72 = aa71 and aa71:FindFirstChild("RagdollPalete") or aa50()
+                end
+                if aa72 and aa72:FindFirstChild("SoundPart") then
+                    local aa78 = aa76:FindFirstChild("Ragdolled")
+                    if aa78 and not aa78.Value then
+                        aa72.SoundPart.Position = aa75.Position
+                    end
+                end
+            end)
+        else
+            if Config.aa73 then
+                Config.aa73:Disconnect()
+                Config.aa73 = nil
+            end
+        end
+    end
+})
