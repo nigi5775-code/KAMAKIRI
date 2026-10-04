@@ -310,3 +310,396 @@ local function spawntoy(name, cframe, vector3)
     local r = inv and inv[name]
     return r
 end
+
+local Config = {
+    walkSpeed = 5,
+    jumpPower = 24,
+    spiderT = false,
+    climbSpeed = 20,
+	spiderCon = nil,
+    fov = 70,
+    deffov = 70,
+    jumpConnection = nil,
+    walkSpeedToggle = false,
+    infiniteJumpToggle = false,
+    fovToggle = false,
+	spincconnn = nil,
+	spinsp = 5,
+    noclip = false,
+    NoclipConnection = nil,
+	kunaiMonitorConn = nil,
+
+	AntigrabCon = nil,
+	AntiGrabRag = false,
+	AntigrabRGProc = false,
+	AntigrabragWalk = false,
+	AntigrabTPT = false,
+    gucciRunId = 0,
+    runId = 0,
+    active = false,
+    ragdollLoopActive = false,
+    ragdollTask = nil,
+    permRagActive = false,
+    permRagTask = nil,
+    setupDone = false,
+    seatOccupied = false,
+    monitoring = false,
+    blobRef = nil,
+    remoteRef = nil,
+    tractorGucciT = false,
+    tractorGucci2 = nil,
+    tractorGucci3 = false,
+    tractorGucci4 = nil,
+    tractorGucci5 = {},
+	autoatakka = false,
+	AutoAttackerToggle = nil,
+	SelectAutoatakka = "Death",
+    autoBlobSitT = false,
+    antiBlobKillActive = false,
+    autoBlobSitTask = nil,
+    antiBlobmanKillTask = nil,
+    Blobkilltest = false,
+	AntiblobauraCon = nil,
+    BlobkilltestCon = nil,
+    AntikillHouseT = false,
+    AntiKillHouseCon = nil,
+    antiKillHousePos = Vector3.new(-544.836304, -7.35040474, 77.8825378),
+    IsBypassRun = false,
+    lastOriginalCFrame = nil,
+    cameraTargetPart = nil,
+    antibananaSit = false,
+    AntiragdollToggle = false,
+	connections = {},
+	charAddedConn = nil,
+	AntiRagBlob = false,
+	BlobRagdollSit = false,
+    Antbananadest = false,
+    Bananans = {},
+    AntiBananaCon = {},
+	paintPartsBackup = {},
+	paintConnections = {},
+    playerTag = nil,
+    targetToy = "InstrumentGuitarBanjo",
+    loopActive = false,
+    runLoop = nil,
+    respawnHandler = nil,
+    spawnToyRemote = nil,
+    destroyToyRemote = nil,
+    CountLines = 0,
+    LastLagS = nil,
+    AutoAntiLag = false,
+    AntiBurnndada = nil,
+    AntiExplosionActive = false,
+    AntiExplosionConnection = nil,
+	antiStickyToggle = false,
+    AutoTurnOnAntiKick = false,
+    Contuuti = {},
+	kickitemToggle = false,
+	kickitemPCLD = nil,
+	kickitemPCLDcon = nil,
+	AntiKickToggle = false,
+	AntikickT = false,
+    AntikickResetToggle = false,
+	AntikickLeaveToggle = false,
+    PlayerListAnti = {},
+    TargetAntigrabtpT = false,
+    tpmode = "Grab",
+    tpDrop = nil,
+
+    PCLDBOX = {},
+    PCLDToggle = false,
+    blackHoleESP = false,
+    BlackholeSelectionB = {},
+    BlackholeBeam = {},
+	BlackHoleConnection = nil,
+    PCLDLine = Color3.fromRGB(0, 255, 255),
+    PCLDSurface = Color3.fromRGB(0, 100, 255),
+    PCLDFill = Color3.fromRGB(0, 0, 255),
+
+    byte_thres = 5 * 1024,
+    PacketCooldown = 30,
+    lastPacketNotify = 0,
+    PacketCon = {},
+    JoinNotify = false,
+    LeaveNotify = false,
+    KickNotify = false,
+    RecentKicked = {},
+    KickConnection = nil,
+	ClickTPKey = Enum.KeyCode.Z,
+	BringKey = Enum.KeyCode.G,
+    ClickTPfutuu = false,
+    TPMode = "ClickTP",
+    TPZcon = nil,
+    TPZconall = nil,
+    TPZholdCn = nil,
+    holdtoggletp = false,
+    TPZContro = nil,
+    MobileTPDownCon = nil,
+	MobileTPUpCon = nil,
+	MobileTPLeaveCon = nil,
+	MobileTPClickCon = nil,
+
+	palletConn = nil,
+    auraRadius = 600,
+    SitAuraToggle = false,
+    SitauraConnection = nil,
+	auraThread = nil,
+    spinSpeed = 150,
+    spinAuraToggle = false,
+    spinConnection = nil,
+	TeleportAuraT = false,
+	teleportBodie = {},
+	teleportGyro = {},
+	teleportCoro = nil,
+    RagdollAuraToggle = false,
+	BringAura = false,
+    deathAuraToggle = false,
+    deathConnection = nil,
+    WhitelistFriends = false,
+    spamkickaura = false,
+    spamkickauralag = false,
+    DoRagdoll = true,
+    UsePallete = true,
+    WhitelistFriends = false,
+    LineLagEnabled = true,
+
+	PStickyToggle = false,
+	speedTractor = false,
+	nitroActive = false,
+	FireAllT = false,
+    FireallWhitelist = true,
+	RagdollAllT = false,
+    RagdollallWhitelist = true,
+    NiggerAllT = false,
+    NiggerWhiteList = true,
+	Killall = false,
+	Kiclall = false,
+    BringAllToggle = false,
+    gewgsgvwe = true,
+    floatConnection = nil,
+    cameraAnchor = nil,
+    originalCameraSubject = nil,
+    freezePart = nil,
+    WhitelistFriends2 = true,
+
+    oopkillblob = false,
+	PlayerList = {},
+    aa6 = false,
+    aa7 = nil,
+    aa9 = 25,
+    aa13 = false,
+    aa15 = nil,
+    aa17 = false,
+    aa73 = nil,
+    running = false,
+    LastHouse = nil,
+    LastPlotOwner = nil,
+    HeightLimit = 10000,
+    SpamkickblT = false,
+    A1B2 = nil,
+    C3D4 = nil,
+    E5F6 = nil,
+    G7H8 = nil,
+    I9J0 = nil,
+    BringMode = "GRAB",
+	Loopkillblob = false,
+	TarAntiAntikickWD = false,
+    TarAntikickRoot = nil,
+	FireLoop = false,
+	BananaLoop = false,
+    niggerLoop = false,
+    PenKillT = false,
+    PenKillTask = nil,
+    LoopKillToggle = false,
+    LoopKillTask = nil,
+
+    blobAllT = false,
+    Bloballmode = "Kill",
+    bloballrun = false,
+    bloballWhite = false,
+    bloballWhitePlr = {},
+	WhitelistFriendsBLOB = false,
+    BlobauraM = "Kill",
+    BlobauraT = false,
+    BlobauraR = false,
+	WalkspeedCont = 16,
+	JumpPownerCont = 50,
+
+    BLkickallWhite = false,
+    BLKickallHeight = 14,
+    BLSpreadRadius = 25,
+
+    LineLagCoro = nil,
+    LineLagToggle = false,
+    WhitelistKickall = false,
+    KickallHeight = 14,
+    kickallRadius = 16,
+    lineLagkickall = nil,
+    lineLagConkickall = false,
+    SelectedPlot = {"Purple-Plot"},
+    plotBreakToggle = false,
+    BleakPlotShuriken = {},
+    savedPosition = nil,
+    isTeleported = false,
+	HouseTPauto = false,
+    GameName = game.Name,
+	Frames = 0,
+	serverHopRejoin = 0
+}
+
+local Window = Library:CreateWindow({
+    Title = "Vortex Hub",
+    Footer = "Project Vortex HUB | FTAP",
+    Icon = 13639308918,
+    NotifySide = "Right",
+    ShowCustomCursor = true,
+    EnableCompacting = true,
+    SidebarCompacted = true,
+    SearchbarSize = UDim2.fromScale(0.45, 1),
+    CornerRadius = 30
+})
+
+ThemeManager:SetLibrary(Library)
+ThemeManager:SetDefaultTheme({
+	BackgroundColor = Color3.fromRGB(0, 0, 0),
+    AccentColor = Color3.fromRGB(126, 126, 126),
+    OutlineColor = Color3.fromRGB(30, 30, 30),
+    FontColor = Color3.fromRGB(174, 174, 174),
+    FontFace = "BuilderSans",
+})
+
+local Tabs = {
+    infoTab = Window:AddTab("情報", "info"),
+    PlayerTab = Window:AddTab("自分", "person-standing"),
+    AntiTab = Window:AddTab("防御", "shield"),
+    Target = Window:AddTab("対象", "target"),
+    BlobmanTab = Window:AddTab("ブロブマン", "skull"),
+    ESPTab = Window:AddTab("ESP", "eye"),
+    NotifyTab = Window:AddTab("通知", "bell"),
+	Keybinds = Window:AddTab("キー設定", "keyboard"),
+    AuraTab = Window:AddTab("オーラ", "sparkles"),
+    MiscTab = Window:AddTab("その他", "package"),
+    ServerTab = Window:AddTab("サーバー", "server"),
+    CreditsTab = Window:AddTab("製作者", "users"),
+    UISettings = Window:AddTab("UI設定", "settings")
+}
+
+local Avatar = Tabs.infoTab:AddLeftGroupbox("アバター")
+local InfoLocal = Tabs.infoTab:AddRightGroupbox("自分 / ゲーム情報")
+local Ser = Tabs.infoTab:AddRightGroupbox("再参加 / 参加")
+local LeftGroupBoxC = Tabs.PlayerTab:AddLeftGroupbox("カメラ")
+local MainLocal = Tabs.PlayerTab:AddLeftGroupbox("メイン")
+local ExtraLocal = Tabs.PlayerTab:AddRightGroupbox("追加")
+local Korblox = Tabs.PlayerTab:AddLeftGroupbox("偽Korblox")
+local LeftGroupBox = Tabs.AntiTab:AddLeftGroupbox("メイン防御")
+local RightGroupBox = Tabs.AntiTab:AddRightGroupbox("追加防御")
+local dadadadad = Tabs.AntiTab:AddLeftGroupbox("対象防御")
+local antikick = Tabs.AntiTab:AddRightGroupbox("アンチキック")
+local Targ = Tabs.Target:AddLeftGroupbox("対象選択")
+local spamde = Tabs.Target:AddLeftGroupbox("所有権")
+local Loop = Tabs.Target:AddLeftGroupbox("掴み")
+local Loop2 = Tabs.Target:AddLeftGroupbox("ループ")
+local Bring = Tabs.Target:AddRightGroupbox("引き寄せ")
+local blobkill = Tabs.Target:AddLeftGroupbox("ブロブマン")
+local DestroyGucci = Tabs.Target:AddRightGroupbox("グッチ破壊")
+local RemoveKickanti = Tabs.Target:AddLeftGroupbox("アンチキック解除")
+local Rei = Tabs.Target:AddRightGroupbox("吹き飛ばし")
+local aurabklaaaaao = Tabs.BlobmanTab:AddLeftGroupbox("ブロブマン全員")
+local aurabklo = Tabs.BlobmanTab:AddLeftGroupbox("ブロブマンオーラ")
+local SettingsDou = Tabs.BlobmanTab:AddRightGroupbox("設定")
+local Antikickesp = Tabs.ESPTab:AddLeftGroupbox("アンチキックESP")
+local PCES = Tabs.ESPTab:AddRightGroupbox("プレイヤー位置検出")
+local BL = Tabs.ESPTab:AddRightGroupbox("ブラックホール")
+local PlayersNotify = Tabs.NotifyTab:AddLeftGroupbox("プレイヤー")
+local PackBl = Tabs.NotifyTab:AddRightGroupbox("その他")
+local Playa = Tabs.Keybinds:AddLeftGroupbox("キー設定")
+local MainAura = Tabs.AuraTab:AddLeftGroupbox("オーラ")
+local kickaura = Tabs.AuraTab:AddRightGroupbox("キックオーラ")
+local Stiyyyyyyyyyyyyyyyyy = Tabs.MiscTab:AddRightGroupbox("パレット張り付き")
+local miscOtherSec = Tabs.MiscTab:AddLeftGroupbox("トラクター")
+local BBB = Tabs.MiscTab:AddRightGroupbox("バリア破壊")
+local Freeeeeeeeee = Tabs.MiscTab:AddLeftGroupbox("火 全員")
+local BananaAll = Tabs.MiscTab:AddRightGroupbox("バナナ 全員")
+local Nigger = Tabs.MiscTab:AddLeftGroupbox("オーブン 全員")
+local BR = Tabs.MiscTab:AddRightGroupbox("引き寄せ 全員")
+local Lag = Tabs.ServerTab:AddLeftGroupbox("ラインラグ")
+local Groundkick = Tabs.ServerTab:AddLeftGroupbox("地面キック")
+local KickallNoblob = Tabs.ServerTab:AddRightGroupbox("ブロブキック全員")
+local Breakiroiro = Tabs.ServerTab:AddLeftGroupbox("プロット破壊")
+local OOOOO = Tabs.ServerTab:AddLeftGroupbox("プロット取得")
+local Dev = Tabs.CreditsTab:AddLeftGroupbox("開発者", "https://cdn.phototourl.com/free/2026-09-10-5c4f8876-4b73-4199-bee4-989287ed6aad.png")
+local Dev2 = Tabs.CreditsTab:AddLeftGroupbox("開発者2")
+local disc = Tabs.CreditsTab:AddRightGroupbox("Discord", "https://cdn.phototourl.com/free/2026-09-10-6aece83a-8053-4537-8650-e70b237a854e.png")
+local MenuGroup = Tabs.UISettings:AddLeftGroupbox("メニュー")
+
+Avatar:AddViewport("MyViewport", {
+    Object = localPlayer.Character,
+    Height = 300,
+    Interactive = true,
+    AutoFocus = true,
+})
+local StatsLabel = InfoLocal:AddLabel("FPS: 0 | Ping: 0ms")
+local UserLabel = InfoLocal:AddLabel({
+    Text = string.format("%s (ID: %s)", localPlayer.DisplayName, localPlayer.Name),
+    Icon = "user",
+})
+
+local GameInfoLabel = InfoLocal:AddLabel({
+    Text = string.format("%s (ID: %s)", Config.GameName, game.PlaceId),
+    Icon = "gamepad-2",
+})
+
+Ser:AddButton({
+    Text = "再参加",
+    Func = function()
+        if Config.serverHopRejoin == 0 then
+            Config.serverHopRejoin = 1
+            VortexNotify("ゲームに再参加しますか?")
+        elseif Config.serverHopRejoin == 1 then
+            Config.serverHopRejoin = 2
+            VortexNotify("本当に再参加する場合は、もう一度ボタンを押してください。")
+        elseif Config.serverHopRejoin == 2 then
+            Config.serverHopRejoin = 0
+            pcall(function()
+                service.TeleportService:Teleport(game.PlaceId, service.Players.LocalPlayer)
+            end)
+        end
+    end
+})
+
+Ser:AddButton({
+    Text = "サーバーホップ",
+    Func = function()
+        if Config.serverHopRejoin == 0 then
+            Config.serverHopRejoin = 1
+            VortexNotify("別のサーバーにホップしますか?")
+        elseif Config.serverHopRejoin == 1 then
+            Config.serverHopRejoin = 2
+            VortexNotify("本当にサーバーホップする場合は、もう一度ボタンを押してください。")
+        elseif Config.serverHopRejoin == 2 then
+            Config.serverHopRejoin = 0
+            pcall(function()
+                local placeId = game.PlaceId
+                local currentJobId = game.JobId
+                local servers = service.HttpService:JSONDecode(
+                    game:HttpGet("https://games.roblox.com/v1/places/" .. placeId .. "/servers/0?sortOrder=Asc&limit=100")
+                )
+                local targetServer = nil
+                if servers and servers.data then
+                    for _, server in ipairs(servers.data) do
+                        if server.id ~= currentJobId and server.playing < server.maxPlayers then
+                            targetServer = server.id
+                            break
+                        end
+                    end
+                end
+                if targetServer then
+                    service.TeleportService:TeleportToPlaceInstance(placeId, targetServer, service.Players.LocalPlayer)
+                else
+                    VortexNotify("別のサーバーが見つかりません。標準のテレポートを再試行します...")
+                    service.TeleportService:Teleport(placeId, service.Players.LocalPlayer)
+                end
+            end)
+        end
+    end
+})
