@@ -1034,3 +1034,259 @@ Korblox:AddButton({
     	end)
 	end
 })
+
+-- ===== 分割4: Defense タブ 前半 =====
+LeftGroupBox:AddToggle("Antigrab", {
+    Text = "アンチグラブ",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            if not Config.AntigrabCon then
+                Config.AntigrabCon = service.RunService.RenderStepped:Connect(function()
+                    local Char = GetCharacter()
+                    local hrp = Char and Char:FindFirstChild("HumanoidRootPart")
+                    local humanoid = Char and Char:FindFirstChild("Humanoid")
+                    if hrp and humanoid then
+                        if hrp.ReceiveAge ~= 0 then
+                            hrp.Anchored = true
+                            if isHeld then isHeld.Value = false end
+                            task.spawn(function()
+                                Struggle:FireServer()
+                                RagdollRemote:FireServer(hrp, 0)
+                            end)
+                            service.ContextActionService:UnbindAction("JumpRemover")
+                            humanoid.AutoRotate = true
+                            if hrp:FindFirstChild("RootJoint") then
+                                hrp.RootJoint.Enabled = true
+                            end
+                            hrp.Anchored = false
+                        elseif hrp.ReceiveAge == 0 then
+                            hrp.Anchored = false
+                        end
+                    end
+                end)
+            end
+        else
+            if Config.AntigrabCon then
+                Config.AntigrabCon:Disconnect()
+                Config.AntigrabCon = nil
+            end
+        end
+    end
+})
+
+LeftGroupBox:AddToggle("Antiragrag", {
+    Text = "アンチグラブ(ラグドール)",
+    Default = false,
+    Callback = function(Value)
+        Config.AntiGrabRag = Value
+        for k, v in pairs(Config.Contuuti) do
+            if v then v:Disconnect() end
+        end
+        table.clear(Config.Contuuti)
+        if Config.AntiGrabRag then
+            local function setupAntiGrab(char)
+                if not char or not Config.AntiGrabRag then return end
+                local hrp = char:WaitForChild("HumanoidRootPart", 5)
+                local hum = char:WaitForChild("Humanoid", 5)
+                local head = char:WaitForChild("Head", 5)
+                if not (hrp and hum and head) then return end
+                for _, v in pairs(char:GetChildren()) do
+                    if v:IsA("BasePart") and v:FindFirstChild("BallSocketConstraint") and v.Name ~= "Head" then
+                        v.BallSocketConstraint.Enabled = false
+                        if v:FindFirstChild("RagdollLimbPart") then
+                            v.RagdollLimbPart.WeldConstraint.Enabled = false
+                        end
+                    end
+                end
+                Config.Contuuti["AGHead"] = head.ChildAdded:Connect(function(PartOwner)
+                    if PartOwner.Name == "PartOwner" then
+                        if not Config.AntigrabRGProc then
+                            Config.AntigrabRGProc = true
+                            hum.Sit = false
+                            Struggle:FireServer(localPlayer)
+                            task.spawn(function() 
+                                while (head and head:FindFirstChild("PartOwner")) or isHeld.Value do
+                                    Struggle:FireServer(localPlayer)
+                                    RagdollRemote:FireServer(hrp, 0)
+                                    task.wait()
+                                end
+                            end)
+                            hrp.Anchored = true
+                            if not Config.AntigrabragWalk then
+                                Config.AntigrabragWalk = true
+                                while isHeld.Value and task.wait() do
+                                    hrp.CFrame = hrp.CFrame + hum.MoveDirection * 0.43
+                                end
+                            end
+                            hrp.Anchored = false
+                            Config.AntigrabRGProc = false
+                            Config.AntigrabragWalk = false
+                        end
+                    end
+                end)
+                local ragdolled = hum:WaitForChild("Ragdolled", 5)
+                if ragdolled then
+                    Config.Contuuti["AGRagdoll"] = ragdolled.Changed:Connect(function()
+                        if hum.Ragdolled.Value then
+                            for _, v in pairs(char:GetChildren()) do
+                                if v:IsA("BasePart") and v:FindFirstChild("BallSocketConstraint") and v.Name ~= "Head" then
+                                    v.BallSocketConstraint.Enabled = false
+                                    if v:FindFirstChild("RagdollLimbPart") then
+                                        v.RagdollLimbPart.WeldConstraint.Enabled = false
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end
+                local weldHRP = hrp:WaitForChild("WeldHRP", 5)
+                if weldHRP then
+                    Config.Contuuti["AGWeld"] = weldHRP.Changed:Connect(function()
+                        if hrp.WeldHRP.Enabled then
+                            while not hum.Sit do task.wait() end
+                            hum.Sit = false
+                            hum.AutoRotate = true
+                            hum.HipHeight = 1
+                            while hrp.WeldHRP.Enabled and task.wait() do
+                                head.CFrame = hrp.CFrame + Vector3.new(0, 1.35, 0)
+                            end
+                            hum.HipHeight = 0
+                        end
+                    end)
+                end
+            end
+            setupAntiGrab(localPlayer.Character)
+            Config.Contuuti["AGChar"] = localPlayer.CharacterAdded:Connect(setupAntiGrab)
+        else
+            local char = localPlayer.Character
+            if char then
+                for _, v in pairs(char:GetChildren()) do
+                    if v:IsA("BasePart") and v:FindFirstChild("BallSocketConstraint") and v.Name ~= "Head" then
+                        v.BallSocketConstraint.Enabled = false
+                        if v:FindFirstChild("RagdollLimbPart") then
+                            v.RagdollLimbPart.WeldConstraint.Enabled = true
+                        end
+                    end
+                end
+            end
+        end
+    end
+})
+
+LeftGroupBox:AddToggle("antigrabtp", {
+	Text = "アンチグラブ(TP)",
+	Default = false,
+	Callback = function(Value)
+		Config.AntigrabTPT = Value
+		local char = GetCharacter()
+		local hrp = char:WaitForChild("HumanoidRootPart")
+		local hum = char:FindFirstChildOfClass("Humanoid")
+		if Value then
+			if hum then
+				hum.PlatformStand = true
+			end
+			task.spawn(function()
+				while Config.AntigrabTPT and hrp do
+					local x = math.random(-500, 500)
+					local y = math.random(30, 480)
+					local z = math.random(-500, 500)
+					hrp.CFrame = CFrame.new(x, y, z)
+					task.wait(0.03)
+				end
+			end)
+		else
+			if hum then
+				hum.PlatformStand = false
+			end
+		end
+	end,
+})
+
+LeftGroupBox:AddToggle("Autoat", {
+    Text = "自動反撃",
+    Default = false,
+    Callback = function(enabled)
+        Config.autoatakka = enabled
+        if enabled then
+            Config.AutoAttackerToggle = coroutine.create(function()
+                while Config.autoatakka do
+                    task.wait(0.02)
+                    local character = GetCharacter()
+                    local head = character and character:FindFirstChild("Head")
+                    local localHRP = character and character:FindFirstChild("HumanoidRootPart")
+                    if not (character and head and localHRP) then continue end
+                    local partOwner = head:FindFirstChild("PartOwner")
+                    if not partOwner then continue end
+                    local attacker = service.Players:FindFirstChild(partOwner.Value)
+                    if not (attacker and attacker.Character) then continue end
+                    local targetChar = attacker.Character
+                    local hrp = targetChar:FindFirstChild("HumanoidRootPart")
+                    local hum = targetChar:FindFirstChildOfClass("Humanoid")
+                    local torso = targetChar:FindFirstChild("Torso")
+                    if not hrp or not hum then continue end
+                    Struggle:FireServer()
+                    pcall(function()
+                        SetNetworkOwner:FireServer(hrp, hrp.CFrame)
+                    end)
+                    task.wait(0.05)
+                    if Config.SelectAutoatakka == "Death" then
+                        pcall(function()
+                            for _, bp in ipairs(targetChar:GetChildren()) do
+                                if bp:IsA("BasePart") then
+                                    bp.CFrame = CFrame.new(0, -1e9, 0)
+                                    bp.CanCollide = false
+                                end
+                            end
+                            hum.Health = 0
+                            hum:ChangeState(Enum.HumanoidStateType.Dead)
+                            CSV(hrp)
+                            DestroyGrabLine:FireServer(hrp)
+                        end)
+                    elseif Config.SelectAutoatakka == "knock-back" then
+                        local knockback = Instance.new("BodyVelocity")
+                        knockback.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        knockback.Velocity = (localHRP.CFrame.LookVector * 200) + Vector3.new(0, 50, 0)
+                        knockback.Parent = hrp
+                        service.Debris:AddItem(knockback, 0.5)
+                    elseif Config.SelectAutoatakka == "air-Suspend" and torso then
+                        local velocity = torso:FindFirstChild("l") or Instance.new("BodyVelocity")
+                        velocity.Name = "l"
+                        velocity.Velocity = Vector3.new(0, 5000, 0)
+                        velocity.MaxForce = Vector3.new(0, math.huge, 0)
+                        velocity.Parent = torso
+                        service.Debris:AddItem(velocity, 1)
+                    elseif Config.SelectAutoatakka == "Freeze" then
+                        local freezeVel = Instance.new("BodyVelocity")
+                        freezeVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        freezeVel.Velocity = Vector3.zero
+                        freezeVel.Parent = hrp
+                        service.Debris:AddItem(freezeVel, 2)
+                    elseif Config.SelectAutoatakka == "Fling" then
+                        local flingVel = Instance.new("BodyVelocity")
+                        flingVel.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+                        flingVel.P = 1250
+                        flingVel.Velocity = localHRP.CFrame.LookVector * 2000 + Vector3.new(0, 1000, 0)
+                        flingVel.Parent = hrp
+                        service.Debris:AddItem(flingVel, 3)
+                    end
+                end
+            end)
+            coroutine.resume(Config.AutoAttackerToggle)
+        else
+            if Config.AutoAttackerToggle then
+                coroutine.close(Config.AutoAttackerToggle)
+                Config.AutoAttackerToggle = nil
+            end
+        end
+    end
+})
+
+LeftGroupBox:AddDropdown("atamode", {
+    Text = "反撃モード",
+    Values = {"Death", "knock-back", "air-Suspend", "Freeze", "Fling"},
+    Default = "Death",
+    Callback = function(value)
+        Config.SelectAutoatakka = value
+    end
+})
