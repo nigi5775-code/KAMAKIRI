@@ -703,3 +703,334 @@ Ser:AddButton({
         end
     end
 })
+
+-- ===== 分割3: Player タブ =====
+LeftGroupBoxC:AddToggle("3rd", {
+    Text = "三人称",
+    Default = false,
+    Callback = function(Value)
+        if Value then
+            localPlayer.CameraMode = Enum.CameraMode.Classic
+            Camera.CameraType = Enum.CameraType.Custom
+            Camera.CameraSubject = localPlayer.Character:WaitForChild("Humanoid")
+            localPlayer.CameraMaxZoomDistance = 16456456546
+            localPlayer.CameraMinZoomDistance = 0.5
+        else
+            localPlayer.CameraMode = Enum.CameraMode.LockFirstPerson
+            Camera.CameraType = Enum.CameraType.Custom
+            Camera.CameraSubject = localPlayer.Character:WaitForChild("Humanoid")
+            localPlayer.CameraMaxZoomDistance = 0
+            localPlayer.CameraMinZoomDistance = 0
+        end
+    end
+})
+
+LeftGroupBoxC:AddToggle("fovT", {
+    Text = "FOV",
+    Default = false,
+    Callback = function(Value)
+        Config.fovToggle = Value
+        if Config.fovToggle then
+            Camera.FieldOfView = Config.fov
+        else
+            Camera.FieldOfView = Config.deffov
+        end
+    end
+})
+
+LeftGroupBoxC:AddSlider("Fovdo", {
+    Text = "FOV °",
+    Min = 10,
+    Max = 120,
+    Default = Config.fov,
+    Rounding = 1,
+    Callback = function(Value)
+        Config.fov = Value
+        if Config.fovToggle then
+            Camera.FieldOfView = Config.fov
+        end
+    end
+})
+
+MainLocal:AddToggle("Walkspeed", {
+    Text = "移動速度",
+    Default = false,
+    Callback = function(Value)
+        Config.walkSpeedToggle = Value
+        task.spawn(function()
+            while Config.walkSpeedToggle do
+                local char = localPlayer.Character
+                if char and char:FindFirstChild("Humanoid") and char:FindFirstChild("HumanoidRootPart") then
+                    local hrp = char.HumanoidRootPart
+                    local moveDir = char.Humanoid.MoveDirection
+                    hrp.CFrame = hrp.CFrame + moveDir * (Config.walkSpeed / 10)
+                end
+                task.wait()
+            end
+            local char = localPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.WalkSpeed = 16
+            end
+        end)
+    end
+})
+
+MainLocal:AddSlider("walkspeeds", {
+    Text = "速度",
+    Default = Config.walkSpeed,
+    Min = 0,
+    Max = 300,
+    Rounding = 1,
+    Callback = function(Value)
+        Config.walkSpeed = Value
+        local char = localPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.WalkSpeed = Value
+        end
+    end
+})
+
+MainLocal:AddToggle("infjump", {
+    Text = "無限ジャンプ",
+    Default = false,
+    Callback = function(Value)
+        Config.infiniteJumpToggle = Value
+        if Config.infiniteJumpToggle then
+            if Config.jumpConnection then Config.jumpConnection:Disconnect() end
+            Config.jumpConnection = service.UserInputService.JumpRequest:Connect(function()
+                local char = localPlayer.Character
+                local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                end
+            end)
+        else
+            if Config.jumpConnection then
+                Config.jumpConnection:Disconnect()
+                Config.jumpConnection = nil
+            end
+        end
+    end
+})
+
+MainLocal:AddSlider("Jumppower", {
+    Text = "ジャンプ力",
+    Min = 24,
+    Max = 300,
+    Default = Config.jumpPower,
+    Rounding = 1,
+    Callback = function(Value)
+        Config.jumpPower = Value
+        local char = localPlayer.Character
+        if char and char:FindFirstChild("Humanoid") then
+            local hum = char.Humanoid
+            hum.UseJumpPower = true
+            hum.JumpPower = Value
+        end
+    end
+})
+
+ExtraLocal:AddToggle("Spider", {
+    Text = "壁登り",
+    Default = false,
+    Callback = function(Value)
+        Config.spiderT = Value
+        if Config.spiderCon then
+            Config.spiderCon:Disconnect()
+            Config.spiderCon = nil
+        end
+        if Value then
+            Config.spiderCon = service.RunService.Heartbeat:Connect(function()
+                local char = GetCharacter()
+                local hrpPart = HRP()
+                local hum = getLocalHum()
+                if not char or not hrpPart or not hum then return end
+                local raycastParams = RaycastParams.new()
+                raycastParams.FilterDescendantsInstances = {char}
+                raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+                local rayDirection = hrpPart.CFrame.LookVector * 1.5
+                local raycastResult = service.Workspace:Raycast(hrpPart.Position, rayDirection, raycastParams)
+                if raycastResult and hum.MoveDirection.Magnitude > 0 then
+                    hrpPart.AssemblyLinearVelocity = Vector3.new(hrpPart.AssemblyLinearVelocity.X, Config.climbSpeed, hrpPart.AssemblyLinearVelocity.Z)
+                end
+            end)
+        end
+    end    
+})
+
+ExtraLocal:AddSlider("ClimbSpeed", {
+    Text = "壁登り速度",
+    Min = 20,
+    Max = 50,
+    Default = 20,
+    Rounding = 1,
+    Callback = function(Value)
+        Config.climbSpeed = Value
+    end    
+})
+
+ExtraLocal:AddToggle("Nocli", {
+    Text = "壁抜け",
+    Default = false,
+    Callback = function(Value)
+        Config.noclip = Value
+        if Config.NoclipConnection then
+            Config.NoclipConnection:Disconnect()
+            Config.NoclipConnection = nil
+        end
+        if Config.noclip then
+            Config.NoclipConnection = service.RunService.Stepped:Connect(function()
+                local character = GetCharacter()
+                if character then
+                    for _, part in ipairs(character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        end
+    end    
+})
+
+ExtraLocal:AddToggle("SpinC", {
+	Text = "回転",
+	Default = false,
+	Callback = function(Value)
+		if Value then
+			Config.spincconnn = service.RunService.Heartbeat:Connect(function()
+				local character = localPlayer.Character
+				local root = character and character:FindFirstChild("HumanoidRootPart")
+				if root then
+					root.CFrame = root.CFrame * CFrame.Angles(0, math.rad(Config.spinsp), 0)
+				end
+			end)
+		else
+			if Config.spincconnn then
+				Config.spincconnn:Disconnect()
+				Config.spincconnn = nil
+			end
+		end
+	end
+})
+
+ExtraLocal:AddSlider("SpinS", {
+	Text = "回転速度",
+	Default = 5,
+	Min = 1,
+	Max = 50,
+	Rounding = 1,
+	Callback = function(Value)
+		Config.spinsp = Value
+	end
+})
+
+ExtraLocal:AddSlider("FPScap", {
+    Text = "FPS上限",
+    Min = 5,
+    Max = 10000,
+    Default = 300,
+    Rounding = 1,
+    Callback = function(fpsCap1)
+        setfpscap(fpsCap1)
+    end
+})
+
+Korblox:AddButton({
+	Text = "偽Korblox",
+	Callback = function()
+        task.spawn(function()
+            local char = GetCharacter()
+            local rightLeg = char:FindFirstChild("Right Leg")
+            local torso = char:WaitForChild("Torso")
+            local hrp = char:WaitForChild("HumanoidRootPart")
+            if rightLeg and torso and hrp then
+                local originalFallHeight = service.Workspace.FallenPartsDestroyHeight
+                local originalCFrame = torso.CFrame
+                service.Workspace.FallenPartsDestroyHeight = -100
+                RagdollRemote:FireServer(hrp, 2)
+                task.wait(0.5)
+                rightLeg.CFrame = CFrame.new(0, -10000, 0)
+                task.wait(0.3)
+                torso.CFrame = CFrame.new(0, -9970, 0)
+                task.wait(0.5)
+                torso.CFrame = originalCFrame
+                task.wait(0.5)
+                service.Workspace.FallenPartsDestroyHeight = originalFallHeight
+            end
+        	task.wait(0.2)
+	        local hrp2 = localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart")
+    	    if not hrp2 then return end
+        	local spawnCFrame = hrp2.CFrame * CFrame.new(0, 0, -5)
+        	spawntoy("NinjaKunai", spawnCFrame, Vector3.zero)
+	        task.wait(0.5)
+	        local inv = service.Workspace:FindFirstChild(localPlayer.Name .. "SpawnedInToys")
+	        local kunai = inv and inv:FindFirstChild("NinjaKunai")
+	        if not kunai or not kunai:FindFirstChild("StickyPart") then return end
+	        local kunaiPos = kunai.StickyPart.Position
+	        hrp2.CFrame = CFrame.new(kunaiPos + Vector3.new(0, 0, 2))
+	        task.wait(0.1)
+	        pcall(function() SetNetworkOwner:FireServer(kunai.StickyPart, kunai.StickyPart.CFrame) end)
+	        pcall(function() CreateGrabLine:FireServer(kunai.StickyPart, Vector3.zero, kunai.StickyPart.Position, false) end)
+	        task.wait(0.05)
+	        pcall(function() DestroyGrabLine:FireServer(kunai.StickyPart) end)
+	        for _, obj in pairs(kunai:GetChildren()) do
+            	if obj:IsA("BasePart") then
+                	obj.CanTouch = false
+                	obj.CanQuery = false
+            	end
+        	end
+	        local firePart = hrp2:FindFirstChild("FirePlayerPart") or hrp2:WaitForChild("FirePlayerPart", 5)
+    	    if not firePart then
+        	    local torso = char:FindFirstChild("Torso")
+            	firePart = torso and torso:FindFirstChild("FirePlayerPart")
+    	    end
+        	if not firePart then firePart = hrp2 end
+	        if firePart then
+    	        local korbloxOffset = CFrame.new(0.5, -1.3, 0) * CFrame.Angles(0, 0, math.rad(90))
+        	    for i = 1, 10 do
+            	    task.spawn(function()
+                	    pcall(function() StickyPartEvent:FireServer(kunai.StickyPart, firePart, korbloxOffset) end)
+                	end)
+            	end
+        	end
+        	Config.kunaiMonitorConn = task.spawn(function()
+            	local korbloxOffset = CFrame.new(0.5, -1.3, 0) * CFrame.Angles(0, 0, math.rad(90))
+	            local kunaiFrame = 0
+    	        while kunai and kunai.Parent and kunai:FindFirstChild("StickyPart") do
+        	        task.wait(0.5)
+            	    local curChar = localPlayer.Character
+                	local curHRP = curChar and curChar:FindFirstChild("HumanoidRootPart")
+                	if not curHRP then continue end
+	                local sticky = kunai:FindFirstChild("StickyPart")
+    	            if not sticky then break end
+        	        local dist = (sticky.Position - curHRP.Position).Magnitude
+            	    if dist < 2 then continue end
+                	local savedCF = curHRP.CFrame
+	                curHRP.CFrame = sticky.CFrame * CFrame.new(0, 0, 4)
+    	            task.wait(0.2)
+        	        if kunaiFrame % 3 == 0 then
+            	        pcall(function() SetNetworkOwner:FireServer(sticky, sticky.CFrame) end)
+                	elseif kunaiFrame % 3 == 1 then
+                    	pcall(function() CreateGrabLine:FireServer(sticky, Vector3.zero, sticky.Position, false) end)
+                	else
+                    	pcall(function() DestroyGrabLine:FireServer(sticky) end)
+	                end
+    	            task.wait(0.05)
+        	        local fp = curHRP:FindFirstChild("FirePlayerPart") or curHRP:WaitForChild("FirePlayerPart", 5)
+            	    if not fp then
+                	    local torso = curChar:FindFirstChild("Torso")
+                    	fp = torso:FindFirstChild("FirePlayerPart")
+                	end
+	                if not fp then fp = curHRP end
+	                if fp then
+    	                pcall(function() StickyPartEvent:FireServer(sticky, fp, korbloxOffset) end)
+        	        end
+            	    task.wait(0.1)
+                	curHRP.CFrame = savedCF
+	                kunaiFrame = kunaiFrame + 1
+    	        end
+        	end)
+    	end)
+	end
+})
