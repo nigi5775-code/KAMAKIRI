@@ -4320,3 +4320,137 @@ RemoveKickanti:AddToggle("RemoveWdantikick", {
         end
     end
 })
+
+-- ===== 日本語化パッチ =====
+task.spawn(function()
+    task.wait(3)
+    local CG = game:GetService("CoreGui")
+    local PG = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    local T = {
+        -- タブ
+        ["Info"]="情報", ["Local Player"]="自分", ["Defense"]="防御",
+        ["Target"]="対象", ["Blobman"]="ブロブマン", ["ESP"]="ESP",
+        ["Notify"]="通知", ["keybinds"]="キー設定", ["Aura"]="オーラ",
+        ["Misc"]="その他", ["Server"]="サーバー", ["Credits"]="製作者",
+        ["UISettings"]="UI設定",
+        -- Player
+        ["Third Person"]="三人称", ["Fov"]="FOV", ["Fov °"]="FOV °",
+        ["Walk Speed"]="移動速度", ["Speed"]="速度",
+        ["Infinite Jump"]="無限ジャンプ", ["Jump Power"]="ジャンプ力",
+        ["Spider"]="壁登り", ["Climb Speed"]="壁登り速度", ["Noclip"]="壁抜け",
+        ["Spin Character"]="回転", ["Spin Speed"]="回転速度", ["FPS"]="FPS上限",
+        ["Fake Korblox"]="偽Korblox",
+        -- Defense
+        ["Anti-Grab"]="アンチグラブ",
+        ["Anti-Grab (Ragdoll)"]="アンチグラブ(ラグドール)",
+        ["Anti-Grab (TP)"]="アンチグラブ(TP)",
+        ["Auto Attacker"]="自動反撃", ["Counter Mode"]="反撃モード",
+        ["Anti-Blob (Kill)"]="アンチブロブ(キル)",
+        ["Anti-Blob (Aura)"]="アンチブロブ(オーラ)",
+        ["Anti-Kill (House)"]="アンチキル(家)",
+        ["Anti-Kill (Bypass)"]="アンチキル(バイパス)",
+        ["Anti-Kill (Grab)"]="アンチキル(掴み)",
+        ["Invisibility"]="透明化",
+        ["Anti-Ragdoll"]="アンチラグドール",
+        ["Anti-Ragdoll (On Blob)"]="アンチラグドール(ブロブ)",
+        ["Anti-Sit"]="アンチ座り",
+        ["Anti-Banana (Destroy Banana)"]="アンチバナナ(破壊)",
+        ["Anti-Paint"]="アンチペイント",
+        ["Anti-Input (Banjo)"]="アンチ入力(バンジョー)",
+        ["Delete Legs"]="足を消す",
+        ["Anti-Lag"]="アンチラグ", ["Auto Anti-Lag"]="自動アンチラグ",
+        ["Anti-Void"]="アンチヴォイド", ["Anti-Burn"]="アンチ火傷",
+        ["Anti-Explosion (Visual)"]="アンチ爆発(視覚)",
+        ["Anti-Explosion"]="アンチ爆発",
+        ["Anti-Sticky"]="アンチ張り付き",
+        ["Break Pcld"]="PCLD破壊",
+        ["anti kick item"]="アンチキックアイテム",
+        ["Anti-Kick [ITEM]"]="アンチキック[アイテム]",
+        ["Anti-Kick"]="アンチキック",
+        ["Anti-Kick (Pencil ✏)"]="アンチキック(鉛筆)",
+        ["Auto-Reset"]="自動リセット", ["Auto-Leave"]="自動退出",
+        ["Auto-Enable"]="自動有効化",
+        -- Target
+        ["Select Target"]="対象選択",
+        ["Kick spam (Ragdoll & Lag)"]="キックスパム(ラグドール&ラグ)",
+        ["Bring Method"]="引き寄せ方法", ["Bring"]="引き寄せ",
+        ["LoopKill"]="ループキル",
+        ["Loop Kick (Spam)"]="ループキック(スパム)",
+        ["Destroy Gucci [BLOB]"]="グッチ破壊[ブロブ]",
+        ["Destroy Gucci[Jump/Sit]"]="グッチ破壊[ジャンプ/座り]",
+        ["Remove Anti-Kick [WD]"]="アンチキック解除[WD]",
+        ["Loop Fire"]="ループ火", ["Loop Banana"]="ループバナナ",
+        ["Loop Nigger"]="ループオーブン", ["Decoy Fling"]="デコイ吹き飛ばし",
+        ["Pen Kill"]="ペンキル", ["Loop Kill (Grab)"]="ループキル(掴み)",
+        -- Blobman
+        ["whitelist"]="ホワイトリスト", ["All Mode"]="全員モード",
+        ["All"]="全員", ["Whitelist"]="ホワイトリスト",
+        ["Aura Mode"]="オーラモード", ["Aura"]="オーラ",
+        ["Jump Powner"]="ジャンプ力",
+        -- ESP
+        ["Anti-Kick ESP"]="アンチキックESP", ["PCLD"]="PCLD",
+        ["PCLD Line Color"]="PCLDライン色",
+        ["PCLD Surface Color"]="PCLD表面色",
+        ["PCLD Fill Color"]="PCLD塗り色",
+        ["BlackHole (ESP)"]="ブラックホール(ESP)",
+        -- Notify
+        ["Join"]="参加", ["Leave"]="退出",
+        ["Detect packets"]="パケット検知",
+        ["BlackHoleKick"]="ブラックホールキック",
+        -- Keybinds
+        ["TP Mode"]="TPモード", ["Click TP (Z)"]="クリックTP(Z)",
+        ["Click TP Key"]="クリックTPキー", ["Bring Key"]="引き寄せキー",
+        ["Spawn Pallet (Tab)"]="パレット生成(Tab)",
+        -- Aura
+        ["Grab Aura"]="グラブオーラ", ["Sit Aura"]="座りオーラ",
+        ["Ragdoll Aura"]="ラグドールオーラ", ["Spin Aura"]="回転オーラ",
+        ["Bring Aura"]="引き寄せオーラ",
+        ["Teleport Aura (Spawn)"]="テレポートオーラ",
+        ["Death Aura"]="デスオーラ",
+        ["KickAura (spam)"]="キックオーラ(スパム)",
+        ["SpawnPallet"]="パレット生成", ["WhiteList"]="ホワイトリスト",
+        -- Misc
+        ["Pallet Sticky"]="パレット張り付き",
+        ["Speed Tractor"]="トラクター速度",
+        ["Tractor Nitro23"]="トラクターニトロ",
+        ["Tractor Jump23"]="トラクタージャンプ",
+        ["Break Barrier"]="バリア破壊",
+        ["Barrier Noclip"]="バリア壁抜け",
+        ["Fire All"]="火 全員", ["Banana All"]="バナナ 全員",
+        ["Nigger All"]="オーブン 全員",
+        ["Bring All"]="引き寄せ 全員",
+        -- Server
+        ["Line Lag server"]="ラインラグ",
+        ["Crazy Line"]="クレイジーライン",
+        ["Ground kick"]="地面キック",
+        ["Kick All (Blob)"]="キック全員(ブロブ)",
+        ["Whitelist Friends"]="ホワイトリスト",
+        ["Stop Lag"]="ラグ停止",
+        ["Select Plot (Break Plot Area)"]="プロット選択(破壊)",
+        ["Plot Break"]="プロット破壊",
+        ["Plot-Time"]="プロット時間",
+        ["Select Plot"]="プロット選択",
+        ["Claim Plot"]="プロット取得",
+        -- UI
+        ["Open Keybind Menu"]="キー設定メニューを開く",
+        ["Custom Cursor"]="カスタムカーソル",
+        ["Notification Side"]="通知位置", ["DPI Scale"]="DPIスケール",
+        ["Menu keybind"]="メニューキー", ["Unload"]="アンロード",
+        -- 通知
+        ["Joined"]="参加", ["Left"]="退出", ["Kicked"]="キック",
+    }
+
+    while task.wait(2) do
+        pcall(function()
+            for _, root in ipairs({CG, PG}) do
+                for _, obj in ipairs(root:GetDescendants()) do
+                    if obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+                        if T[obj.Text] then obj.Text = T[obj.Text] end
+                    end
+                end
+            end
+        end)
+    end
+end)
+VortexNotify("日本語化を適用しました")
